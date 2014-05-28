@@ -23,7 +23,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -32,11 +31,7 @@ import java.util.concurrent.TimeUnit;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
-import com.espertech.esper.client.ConfigurationEngineDefaults;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.Collections2;
-import jodd.util.ThreadUtil;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -52,6 +47,8 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -66,31 +63,30 @@ public class Test {
     private static final Logger logger = LoggerFactory.getLogger(Test.class);
     private static final Object NULL = null;
     private static final String FLAG = "OK";
-    private static Cache<String,Integer> cacheCounter = CacheBuilder.newBuilder().expireAfterWrite(2,TimeUnit.SECONDS).build();
-
+    private static Cache<String, Integer> cacheCounter = CacheBuilder.newBuilder()
+            .expireAfterWrite(2, TimeUnit.SECONDS).build();
 
     public static enum FeeType {
         ALL_FREE, PART_FREE, ALL_CHARGE, UNKNOWN;
     }
 
-
-    public static int getCounter(String key)  {
+    public static int getCounter(String key) {
         logger.debug("ces");
         try {
             return cacheCounter.get("counterKey", new Callable<Integer>() {
                 @Override
                 public Integer call() throws Exception {
-                    try{
+                    try {
                         TimeUnit.SECONDS.sleep(3);
-                    }catch (Exception e){
-                        logger.error("",e);
+                    } catch (Exception e) {
+                        logger.error("", e);
                     }
                     logger.debug("load counter");
                     return Integer.valueOf(2);
                 }
             });
-        }catch (Exception e){
-            logger.error("",e);
+        } catch (Exception e) {
+            logger.error("", e);
         }
         return -1;
     }
@@ -139,46 +135,117 @@ public class Test {
     }
 
     @org.junit.Test
-    public void ceshiListRandom(){
-        List<Integer> list = Lists.newArrayList(1,2,3,4,5,6,7,8,9,10);
-        for(int i=0; i<10;i++) {
+    public void testIntern() {
+        // intern方法 内存分配在持久带常量池分配，不足触发fullgc回收
+        String a = new String("abc").intern();
+        String b = new String("abc").intern();
+        logger.debug("flag: {}", a == b);
+
+        // new 对象 内存在堆中分配，不足触发yanggc回收
+        String c = new String("abc");
+        String d = new String("abc");
+        logger.debug("flag: {}", c == d);
+
+        String e = "abc";
+        String f = "abc";
+        logger.debug("flag: {}", e == f);
+        logger.debug("flag: {}", e == a);
+
+        int count = 1000000;
+        for(int i=0; i<count;i++){
+            new String(RandomStringUtils.randomAlphabetic(1000)).intern();
+        }
+    }
+
+    @org.junit.Test
+    public void ceshiCpuCache() {
+        StopWatch watch = new StopWatch();
+        int[] arr = new int[64 * 1024 * 1024];
+        int k = 5;
+
+        watch.start("k=5");
+        for (int i = 0; i < arr.length; i += k)
+            arr[i] *= 3;
+        watch.stop();
+
+        k = 10;
+        watch.start("k=10");
+        for (int i = 0; i < arr.length; i += k)
+            arr[i] *= 3;
+        watch.stop();
+
+        k = 16;
+        watch.start("k=16");
+        for (int i = 0; i < arr.length; i += k)
+            arr[i] *= 3;
+        watch.stop();
+
+        k = 17;
+        watch.start("k=17");
+        for (int i = 0; i < arr.length; i += k)
+            arr[i] *= 3;
+        watch.stop();
+
+        k = 32;
+        watch.start("k=32");
+        for (int i = 0; i < arr.length; i += k)
+            arr[i] *= 3;
+        watch.stop();
+
+        k = 64;
+        watch.start("k=64");
+        for (int i = 0; i < arr.length; i += k)
+            arr[i] *= 3;
+        watch.stop();
+
+        k = 90;
+        watch.start("k=90");
+        for (int i = 0; i < arr.length; i += k)
+            arr[i] *= 3;
+        watch.stop();
+
+        logger.debug(watch.prettyPrint());
+    }
+
+    @org.junit.Test
+    public void ceshiListRandom() {
+        List<Integer> list = Lists.newArrayList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        for (int i = 0; i < 10; i++) {
             Collections.shuffle(list);
             logger.debug(JsonUtils.encode(list));
         }
     }
 
     @org.junit.Test
-    public void decimal(){
-        logger.debug("price: {}",new BigDecimal("0.1"));
+    public void decimal() {
+        logger.debug("price: {}", new BigDecimal("0.1"));
     }
 
-
     @org.junit.Test
-    public void testLocalCache(){
-        ThreadPoolExecutor executor = new ThreadPoolExecutor(3,
-                3, 3, TimeUnit.SECONDS,
+    public void testLocalCache() {
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(3, 3, 3, TimeUnit.SECONDS,
                 new ArrayBlockingQueue<Runnable>(10), new ThreadPoolExecutor.DiscardOldestPolicy());
 
-        for(int i=0 ;i<3; i++){
+        for (int i = 0; i < 3; i++) {
             executor.submit(new Runnable() {
                 @Override
                 public void run() {
-                    while (true){
-                        logger.debug("counter: {}",getCounter("counter"));
-                        try{
+                    while (true) {
+                        logger.debug("counter: {}", getCounter("counter"));
+                        try {
                             TimeUnit.SECONDS.sleep(1);
-                        }catch (Exception e){
-                            logger.error("",e);
+                        } catch (Exception e) {
+                            logger.error("", e);
                         }
                     }
                 }
             });
         }
 
-        try{
+        try {
             TimeUnit.SECONDS.sleep(1000000);
-        }catch (Exception e){
-            logger.error("",e);
+        } catch (Exception e) {
+            logger.error("", e);
         }
 
     }
@@ -187,12 +254,9 @@ public class Test {
     public void testStr() {
         String signKey = "D1EEFEB897C4DD754CB89275C33BA044";
 
-        logger.debug(StringUtils.overlay(signKey,"*********",10,11));
+        logger.debug(StringUtils.overlay(signKey, "*********", 10, 11));
 
         logger.debug("signkey: {}", warpSecrecyMsg(signKey, '*'));
-
-
-
 
         long begin = System.currentTimeMillis();
         int length = signKey.length();
