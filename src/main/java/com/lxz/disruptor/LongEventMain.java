@@ -3,15 +3,22 @@ package com.lxz.disruptor;
 import java.nio.ByteBuffer;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
-import com.lxz.util.SystemClock;
 
 public class LongEventMain {
     public static void main(String[] args) throws Exception {
         // Executor that will be used to construct new threads for consumers
-        Executor executor = Executors.newCachedThreadPool();
+        Executor executor = Executors.newFixedThreadPool(10, new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread thread = new Thread(r);
+                thread.setName("disruptor");
+                return thread;
+            }
+        });
 
         // The factory for the event
         LongEventFactory factory = new LongEventFactory();
@@ -34,6 +41,7 @@ public class LongEventMain {
         LongEventProducer producer = new LongEventProducer(ringBuffer);
 
         ByteBuffer bb = ByteBuffer.allocate(8);
+
         for (long l = 0; true; l++) {
             bb.putLong(0, l);
             producer.onData(bb);
