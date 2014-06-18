@@ -24,7 +24,7 @@ public class CyclicBarrierTest {
 
         executor.shutdown();
 
-        System.out.println("time:  "+(System.currentTimeMillis()-start));
+        System.out.println("time: "+(System.currentTimeMillis()-start));
     }
 }
 
