@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.sql.Timestamp;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
@@ -132,6 +133,18 @@ public class Test {
         }
 
         return null;
+    }
+
+    @org.junit.Test
+    public void testString(){
+        String ctId = "CTD00240101010101";
+
+        logger.debug(StringUtils.substring(ctId,0,6));
+
+        logger.debug(""+StringUtils.startsWith(ctId,"CTD"));
+
+        logger.debug(MessageFormat.format("ctserial({0}) is illegal",ctId));
+
     }
 
     @org.junit.Test
