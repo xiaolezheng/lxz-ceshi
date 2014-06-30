@@ -59,7 +59,7 @@ public class JsonUtil {
 
     public static <T> T jsonNodeToT(JsonNode jsonNode, Class<T> type) {
         try {
-            return mapper.treeToValue(jsonNode, type);
+            return mapper.readValue(jsonNode, type);
         } catch (IOException e) {
             logger.error("", e);
         }

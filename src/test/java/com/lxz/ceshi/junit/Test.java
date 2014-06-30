@@ -32,6 +32,8 @@ import java.util.concurrent.TimeUnit;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import com.espertech.esper.collection.MultiKey;
+import org.apache.commons.collections.map.MultiKeyMap;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -133,6 +135,59 @@ public class Test {
         }
 
         return null;
+    }
+
+
+    public static int testTime(){
+        long start = System.currentTimeMillis();
+        try{
+            int i =10;
+            try {
+                TimeUnit.SECONDS.sleep(2);
+            }catch (Exception e){
+
+            }
+            return i;
+        }finally {
+            logger.debug("time: {}",System.currentTimeMillis()-start);
+        }
+    }
+
+
+    @org.junit.Test
+    public void testMultiKeyMap(){
+        MultiKeyMap multiKeyMap = new MultiKeyMap();
+        multiKeyMap.put("a1","a2","00");
+        multiKeyMap.put("b1","b2","01");
+        logger.debug(multiKeyMap.get("a1")+"");
+    }
+
+    @org.junit.Test
+    public void testTT(){
+        logger.debug(""+testTime());
+    }
+
+    @org.junit.Test
+    public void testDateTruncate(){
+        logger.debug(""+DateUtils.truncate(new Date(),Calendar.HOUR_OF_DAY));
+        logger.debug(""+DateUtils.truncate(new Date(),Calendar.DAY_OF_MONTH));
+        logger.debug(""+DateUtils.truncate(new Date(),Calendar.MINUTE));
+    }
+
+    @org.junit.Test
+    public void testStrings(){
+        String hotelSeq = "beijing_city_20011";
+        int index = StringUtils.lastIndexOf(hotelSeq,"_");
+        logger.debug(index+"");
+        String cityCode = StringUtils.substring(hotelSeq,0,index);
+
+        String seqId = StringUtils.substring(hotelSeq,index+1);
+
+        String url = "http://hotel.qunar.com/city/{0}/dt-{1}/";
+
+        url = MessageFormat.format(url,cityCode,seqId);
+
+        logger.debug(url);
     }
 
     @org.junit.Test
