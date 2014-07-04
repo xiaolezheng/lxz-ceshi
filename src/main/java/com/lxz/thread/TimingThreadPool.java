@@ -44,6 +44,7 @@ public class TimingThreadPool extends ThreadPoolExecutor {
             logger.debug("thread: {}, time: {}", r, taskTime);
         } finally {
             super.afterExecute(r, t);
+            startTime.remove();
         }
     }
 
