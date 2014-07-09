@@ -24,14 +24,20 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import com.lxz.util.JsonUtil;
 import org.apache.commons.collections.map.MultiKeyMap;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -40,6 +46,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StopWatch;
@@ -943,5 +950,63 @@ public class Test {
     private static int computerListSize(List<Integer> element) throws Exception {
         TimeUnit.MILLISECONDS.sleep(20);
         return element.size();
+    }
+
+    @org.junit.Test
+    public void testParallel(){
+        long start = System.currentTimeMillis();
+
+        Map<String,String> result = Maps.newHashMap();
+        CountDownLatch latch = new CountDownLatch(2);
+        ReentrantLock lock = new ReentrantLock();
+
+        ExecutorService executor = Executors.newFixedThreadPool(4);
+        executor.execute(CralwTask.build(result,latch,lock,"name"));
+        executor.execute(CralwTask.build(result,latch,lock,"sex"));
+        try{
+            latch.await(400,TimeUnit.MILLISECONDS);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        logger.info("result: {}, time: {}", JsonUtil.encode(result),System.currentTimeMillis()-start);
+
+        executor.shutdown();
+    }
+
+
+    private static class CralwTask implements Runnable{
+        private Map<String,String> result;
+        private CountDownLatch latch;
+        private Lock lock;
+        private String key;
+
+        private CralwTask(Map<String, String> result, CountDownLatch latch, Lock lock, String key) {
+            this.result = result;
+            this.latch = latch;
+            this.lock = lock;
+            this.key = key;
+        }
+
+        public static CralwTask build(Map<String, String> result, CountDownLatch latch, Lock lock, String key){
+            return new CralwTask(result, latch, lock, key);
+        }
+
+        public void run(){
+            try{
+                TimeUnit.MILLISECONDS.sleep(300);
+
+                lock.lock();
+                try {
+                    result.put(key, String.valueOf(System.currentTimeMillis()));
+                }finally {
+                    lock.unlock();
+                }
+            }catch(Exception e){
+                e.printStackTrace();
+            } finally {
+                latch.countDown();
+            }
+        }
     }
 }
