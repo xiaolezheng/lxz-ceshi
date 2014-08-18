@@ -25,6 +25,7 @@ import java.util.concurrent.CompletionService;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,6 +38,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import com.google.common.collect.ImmutableSet;
+import com.lxz.ceshi.Person;
 import com.lxz.util.JsonUtil;
 import org.apache.commons.collections.map.MultiKeyMap;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -158,6 +161,128 @@ public class Test {
         }
     }
 
+    public static void print(String str){
+        if(StringUtils.isEmpty(str)){
+            return;
+        }
+
+        logger.debug("print: {}",str);
+    }
+
+    @org.junit.Test
+    public void testmm(){
+        Set<Integer> PS_PRODUCTTYPE_SET = ImmutableSet.of(3, 4);
+        logger.debug("flag: {}",PS_PRODUCTTYPE_SET.contains(3));
+    }
+
+    @org.junit.Test
+    public void testCC(){
+        for(int i=0; i<10;i++){
+            String str = i+"##";
+            if(i%2==0){
+                str = "";
+            }
+            print(str);
+        }
+
+        Person p = new Person(20,1);
+        logger.debug("person: {}",p);
+
+
+        class Person{
+            private int age;
+            private int sex;
+
+            Person(int age, int sex) {
+                this.age = age;
+                this.sex = sex;
+            }
+
+            public int getAge() {
+                return age;
+            }
+
+            public void setAge(int age) {
+                this.age = age;
+            }
+
+            public int getSex() {
+                return sex;
+            }
+
+            public void setSex(int sex) {
+                this.sex = sex;
+            }
+
+            public String toString(){
+                return ToStringBuilder.reflectionToString(this,ToStringStyle.SHORT_PREFIX_STYLE);
+            }
+        }
+    }
+
+    @org.junit.Test
+    public void testcDate(){
+        FastDateFormat format = FastDateFormat.getInstance("yyyy-MM-dd");
+
+        Date curDate = DateUtils.truncate(new Date(),Calendar.HOUR_OF_DAY);
+
+        logger.debug(format.format(curDate));
+
+        Date lastDate = curDate;
+
+        lastDate = DateUtils.addDays(curDate,-2);
+
+        logger.debug(format.format(curDate));
+        logger.debug(format.format(lastDate));
+    }
+
+    @org.junit.Test
+    public void testCache(){
+        Cache<String,String> cache = CacheBuilder.newBuilder().expireAfterWrite(5,TimeUnit.MILLISECONDS).build();
+
+        for(int i=0; i<10; i++) {
+            try {
+                String value = cache.get("11", new Callable<String>() {
+                    @Override
+                    public String call() throws Exception {
+                        logger.info("--------------------");
+                        return  "4444444";
+                    }
+                });
+
+                logger.info("value: {}",value);
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+
+
+    }
+
+    @org.junit.Test
+    public void testStringToList(){
+        String serialNumbers = "0122,21012,312021";
+        List<String> serialNumberList = Lists.newArrayList(StringUtils.split(serialNumbers,','));
+        logger.debug("list: {}",JsonUtil.encode(serialNumberList));
+
+        StringBuilder sb = new StringBuilder(String.valueOf(116.391495)).append(",").append(39.929442);
+        logger.debug(sb.toString());
+
+    }
+
+    @org.junit.Test
+    public void testTimestamp(){
+        Timestamp operateTime = Timestamp.valueOf("0000-00-00 00:00:00");
+        logger.debug("operateTime: {}",operateTime.after(new Date()));
+    }
+
+    @org.junit.Test
+    public void testDoubleCompare(){
+        double a = 20.1235;
+        double b = 30.2315;
+        logger.debug("f: {}", a!=b);
+    }
+
     @org.junit.Test
     public void testSplit() {
         final String numberList = "One,Two,Three,Four,Five,Six,Seven,Eight,Nine,Ten";
@@ -176,6 +301,13 @@ public class Test {
         System.out.println(System.currentTimeMillis() - start);
     }
 
+
+    @org.junit.Test
+    public void testMessage(){
+        logger.debug(MessageFormat.format("{0},{1}","jim",""));
+        logger.debug(MessageFormat.format("参数有误, ctSerial: {0}, customerSerial: {1}","1001","1225"));
+        logger.debug(MessageFormat.format("合同({0})迁移到商户({1})下面","10251","10251026"));
+    }
 
     @org.junit.Test
     public void testMultiKeyMap() {
@@ -961,8 +1093,8 @@ public class Test {
         ReentrantLock lock = new ReentrantLock();
 
         ExecutorService executor = Executors.newFixedThreadPool(4);
-        executor.execute(CralwTask.build(result,latch,lock,"name"));
-        executor.execute(CralwTask.build(result,latch,lock,"sex"));
+        executor.execute(CralwTask.build(result, latch, lock, "name"));
+        executor.execute(CralwTask.build(result, latch, lock, "sex"));
         try{
             latch.await(400,TimeUnit.MILLISECONDS);
         }catch (Exception e){
