@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.sql.Timestamp;
+import java.text.Format;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -173,6 +174,8 @@ public class Test {
     public void testmm(){
         Set<Integer> PS_PRODUCTTYPE_SET = ImmutableSet.of(3, 4);
         logger.debug("flag: {}",PS_PRODUCTTYPE_SET.contains(3));
+
+        logger.debug(MessageFormat.format("解析消息失败, message: {0}, 详情: {1}", "ceshi",PS_PRODUCTTYPE_SET));
     }
 
     @org.junit.Test
