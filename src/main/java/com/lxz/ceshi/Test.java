@@ -65,6 +65,12 @@ public class Test {
             innerSql = StringUtil.replaceFirst(innerSql,"?",p);
         }
 
-        System.out.println(innerSql);
+        //System.out.println(innerSql);
+
+        System.out.println(OperateType.ADD.ordinal());
+    }
+
+    private static enum OperateType{
+        CHECK,ADD;
     }
 }

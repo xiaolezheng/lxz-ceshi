@@ -20,6 +20,7 @@ public abstract class ScmMessageListner implements MessageListener{
     public void onMessage(Message message){
         int type = getMessageType();
         try{
+            printMsg(message);
             process(message);
 
             onSuccess(type);
@@ -27,6 +28,10 @@ public abstract class ScmMessageListner implements MessageListener{
             onFail(type);
             e.printStackTrace();
         }
+    }
+
+    public void printMsg(Message msg){
+        System.out.println("msg: "+msg);
     }
 
     public abstract int getMessageType();

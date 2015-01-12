@@ -2,12 +2,16 @@ package com.lxz.ceshi.util;
 
 import java.io.IOException;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.ObjectReader;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.type.TypeReference;
 import org.slf4j.Logger;
@@ -74,5 +78,30 @@ public class JsonUtils {
             logger.error("decode(String, Class<T>)", e);
         }
         return null;
+    }
+
+    public static <T> T decode(String json, String path, Class<T> valueType) {
+        ObjectReader objectReader = objectMapper.reader();
+        T value;
+        try {
+            JsonNode jsonNode = objectReader.readTree(json);
+            String[] names = StringUtils.split(path, '.');
+            if (ArrayUtils.isEmpty(names)) {
+                return null;
+            }
+            for (String name : names) {
+                if (jsonNode.get(name) == null) {
+                    return null;
+                }
+                jsonNode = jsonNode.get(name);
+            }
+            if (jsonNode == null) {
+                return null;
+            }
+            value = objectMapper.readValue(jsonNode, valueType);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return value;
     }
 }

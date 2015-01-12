@@ -26,6 +26,7 @@ public class JsonUtil {
         mapper.configure(SerializationConfig.Feature.WRITE_DATES_AS_TIMESTAMPS, false);
         mapper.configure(SerializationConfig.Feature.WRITE_NULL_MAP_VALUES, false);
         mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        mapper.configure(SerializationConfig.Feature.FAIL_ON_EMPTY_BEANS,false);
     }
 
     public static String encode(Object object) {

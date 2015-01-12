@@ -3,15 +3,16 @@
  */
 package com.lxz.ceshi.junit;
 
+import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.sql.Timestamp;
-import java.text.Format;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -39,10 +40,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
-import com.google.common.collect.ImmutableSet;
-import com.lxz.ceshi.Person;
-import com.lxz.util.JsonUtil;
 import org.apache.commons.collections.map.MultiKeyMap;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -50,11 +49,11 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StopWatch;
 
+import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
@@ -62,11 +61,16 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
+import com.lxz.ceshi.Person;
 import com.lxz.ceshi.util.JsonUtils;
+import com.lxz.util.JsonUtil;
 
 /**
  * @author: xiaole Date: 14-2-20 Time: 下午12:32
@@ -126,9 +130,9 @@ public class Test {
     }
 
     /**
-     * 包装隐私安全信息，进行中间打码处理
-     * 
      * @param source 源字符串
+     * 包装隐私安全信息，进行中间打码处理
+     *
      * @param replaceChar 打码字符
      * @return
      */
@@ -143,9 +147,12 @@ public class Test {
             buf.append(StringUtils.substring(source, partEnd));
             return buf.toString();
         }
-
         return null;
     }
+
+
+
+
 
     public static int testTime() {
         long start = System.currentTimeMillis();
@@ -162,37 +169,218 @@ public class Test {
         }
     }
 
-    public static void print(String str){
-        if(StringUtils.isEmpty(str)){
+    public static void print(String str) {
+        if (StringUtils.isEmpty(str)) {
             return;
         }
 
-        logger.debug("print: {}",str);
+        logger.debug("print: {}", str);
+    }
+
+    static class HotelBase{
+        private int price;
+        private String name;
+
+        public HotelBase(int price,String name){
+            this.price = price;
+            this.name = name;
+        }
+
+        public int getPrice() {
+            return price;
+        }
+
+        public void setPrice(int price) {
+            this.price = price;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return "HotelBase{" +
+                    "price=" + price +
+                    ", name='" + name + '\'' +
+                    '}';
+        }
+    }
+
+    public static String buildResult(String name,String... requestSource){
+        if(ArrayUtils.isNotEmpty(requestSource)){
+            return Joiner.on('_').join(name,requestSource[0]);
+        }
+
+        return Joiner.on('_').join(name,"");
     }
 
     @org.junit.Test
-    public void testmm(){
+    public void testBigDicmal(){
+        BigDecimal bigDecimal = new BigDecimal("3");
+        logger.info("test: {}", bigDecimal);
+
+        BigDecimal groupPrice = new BigDecimal("120");
+        BigDecimal finalPrice = new BigDecimal("117");
+
+        logger.info("grossfit: {}",(groupPrice.subtract(finalPrice)).divide(groupPrice, 2, BigDecimal.ROUND_DOWN));
+
+        String content = 1 + "#" + "测试";
+        logger.info("ddddddd: {}, {}", StringUtils.substringBefore(content,"#"), StringUtils.substringAfter(content, "#"));
+    }
+
+    @org.junit.Test
+    public void testCCCC(){
+        logger.info(buildResult("jim"));
+        logger.info(buildResult("tom", new String[]{"ps"}));
+    }
+
+    @org.junit.Test
+    public void testJoiners(){
+        logger.info(Joiner.on('_').join("crm_task","tuan","ps"));
+    }
+
+    @org.junit.Test
+    public void testEquails(){
+        logger.info("flag: {}", "leon".equals("Leon"));
+        logger.info("flag: {}", "leon".equalsIgnoreCase("Leon"));
+    }
+
+    @org.junit.Test
+    public void testSets(){
+        Set<Integer> con = Sets.newHashSet(1,2,6);
+
+        logger.info("{}",con.contains(2));
+        logger.info("{}",con.contains(5));
+
+        List<Integer> lists = Lists.newArrayList(1,2,3);
+        logger.info("flag: {}", lists.contains(2));
+        logger.info("flag: {}", lists.contains(0));
+    }
+
+    @org.junit.Test
+    public void sortSS(){
+        List<HotelBase> data = Lists.newArrayList(new HotelBase(5, "xiecheng"), new HotelBase(2, "aaa"), new HotelBase(2, "yilong"), new HotelBase(3,"yilong"),new HotelBase(2,"quanr"));
+
+        // 按价格排序
+        Collections.sort(data, new Comparator<HotelBase>() {
+            @Override
+            public int compare(HotelBase o1, HotelBase o2) {
+                if(o1.getPrice() == o2.getPrice()){
+                    if(o1.getName().equals("quanr")){
+                        return -1;
+                    }
+                }
+
+                return o1.getPrice() - o2.getPrice();
+            }
+        });
+
+        for(HotelBase base: data) {
+            logger.info("{}", base);
+        }
+    }
+
+    @org.junit.Test
+    public void testJsonToMap() {
+
+       /* String json ="{\"detail\":{\"checkIn\":\"2014-09-28\",\"checkOut\":\"2014-09-30\",\"hotelSeq\":\"beijing_city_22744\",\"priceInfo\":[{\"price\":24,\"wrapperId\":\"wictrip0000\"},{\"price\":139,\"wrapperId\":\"wiqunarqta2\"}],\"roomCategory\":\"豪华标准房\",\"roomIds\":[\"1111\",\"22222\"],\"type\":2,\"serialNumber\":\"CH01408777\",\"hotelName\":\"去呼呼北京鸟巢爱特家酒店公寓\",\"userId\":\"zhongjie.wang\"},\"kpName\":\"撒旦法\",\"hotel\":\"去呼呼北京鸟巢爱特家酒店公寓\",\"customerPhone\":\"--400-890-2060\",\"type\":13,\"serialNum\":\"CH01408777\",\"kpPhone\":\"13811111111\"}";
+
+        Map<String,String> detailMap = buildMap(json);
+        logger.info("dddddddddddddd: {}",detailMap.get("hotelSeq"));*/
+
+        Map<String,Object> content = Maps.newHashMap();
+        content.put("name","jim");
+        logger.info("============ name: {}, {}", (String)content.get("name"), (String)content.get("sex"));
+
+        if("null".equals((String)content.get("sex"))){
+            logger.info("----------------------");
+        }
+
+    }
+
+    public Map<String,String> buildMap(String json){
+        if (StringUtils.isNotBlank(json)) {
+           return JsonUtils.decode(json, "detail", Map.class);
+        }
+
+        return Maps.newHashMap();
+    }
+
+    @org.junit.Test
+    public void testdTime() {
+        java.sql.Date date = new java.sql.Date(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(90));
+        logger.info("" + date.getTime());
+    }
+
+    @org.junit.Test
+    public void testMuiltMapSet() {
+        HashMultimap<String, String> map = HashMultimap.create();
+        map.put("1", "a");
+        map.put("2", "b");
+        map.put("1", "c");
+        map.put("1", "a");
+
+        Map<String, Collection<String>> collectionMap = map.asMap();
+        for (Map.Entry<String, Collection<String>> entry : collectionMap.entrySet()) {
+            logger.info("{} -> {}", entry.getKey(), entry.getValue());
+        }
+    }
+
+    @org.junit.Test
+    public void testBigDecial() {
+        // 返现后价格
+        BigDecimal price = new BigDecimal("-0.13");
+        // 返现价格
+        BigDecimal oprice = new BigDecimal("0.23");
+
+        logger.info("result: {}", price.doubleValue()+"");
+        logger.info("result: {}", price.add(oprice));
+        logger.info("result: {}", price.compareTo(oprice));
+    }
+
+    @org.junit.Test
+    public void testDDate() {
+        Date beginDate = DateUtils.truncate(DateUtils.addDays(new Date(), -2), Calendar.DAY_OF_MONTH);
+        Date endDate = DateUtils.addDays(beginDate, 1);
+        logger.info("beginDate: {}", FastDateFormat.getInstance("yyyy-MM-dd").format(beginDate));
+        logger.info("endDate: {}", FastDateFormat.getInstance("yyyy-MM-dd").format(endDate));
+    }
+
+    @org.junit.Test
+    public void testmm() {
+
+        boolean flag = CharMatcher.DIGIT.matchesAllOf("1132374");
+        logger.debug("flag: {}", flag);
+
+        String productId = Math.abs(Integer.parseInt("1132374")) + "";
+
+        logger.debug("productId: {}", productId);
+
         Set<Integer> PS_PRODUCTTYPE_SET = ImmutableSet.of(3, 4);
-        logger.debug("flag: {}",PS_PRODUCTTYPE_SET.contains(3));
+        logger.debug("flag: {}", PS_PRODUCTTYPE_SET.contains(3));
 
-        logger.debug(MessageFormat.format("解析消息失败, message: {0}, 详情: {1}", "ceshi",PS_PRODUCTTYPE_SET));
+        logger.debug(MessageFormat.format("解析消息失败, message({0}), 详情({1})", "ceshi", PS_PRODUCTTYPE_SET));
     }
 
     @org.junit.Test
-    public void testCC(){
-        for(int i=0; i<10;i++){
-            String str = i+"##";
-            if(i%2==0){
+    public void testCC() {
+        for (int i = 0; i < 10; i++) {
+            String str = i + "##";
+            if (i % 2 == 0) {
                 str = "";
             }
             print(str);
         }
 
-        Person p = new Person(20,1);
-        logger.debug("person: {}",p);
+        Person p = new Person(20, 1);
+        logger.debug("person: {}", p);
 
-
-        class Person{
+        class Person {
             private int age;
             private int sex;
 
@@ -217,56 +405,55 @@ public class Test {
                 this.sex = sex;
             }
 
-            public String toString(){
-                return ToStringBuilder.reflectionToString(this,ToStringStyle.SHORT_PREFIX_STYLE);
+            public String toString() {
+                return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
             }
         }
     }
 
     @org.junit.Test
-    public void testcDate(){
+    public void testcDate() {
         FastDateFormat format = FastDateFormat.getInstance("yyyy-MM-dd");
 
-        Date curDate = DateUtils.truncate(new Date(),Calendar.HOUR_OF_DAY);
+        Date curDate = DateUtils.truncate(new Date(), Calendar.HOUR_OF_DAY);
 
         logger.debug(format.format(curDate));
 
         Date lastDate = curDate;
 
-        lastDate = DateUtils.addDays(curDate,-2);
+        lastDate = DateUtils.addDays(curDate, -2);
 
         logger.debug(format.format(curDate));
         logger.debug(format.format(lastDate));
     }
 
     @org.junit.Test
-    public void testCache(){
-        Cache<String,String> cache = CacheBuilder.newBuilder().expireAfterWrite(5,TimeUnit.MILLISECONDS).build();
+    public void testCache() {
+        Cache<String, String> cache = CacheBuilder.newBuilder().expireAfterWrite(5, TimeUnit.MILLISECONDS).build();
 
-        for(int i=0; i<10; i++) {
+        for (int i = 0; i < 10; i++) {
             try {
                 String value = cache.get("11", new Callable<String>() {
                     @Override
                     public String call() throws Exception {
                         logger.info("--------------------");
-                        return  "4444444";
+                        return "4444444";
                     }
                 });
 
-                logger.info("value: {}",value);
+                logger.info("value: {}", value);
             } catch (ExecutionException e) {
                 e.printStackTrace();
             }
         }
 
-
     }
 
     @org.junit.Test
-    public void testStringToList(){
+    public void testStringToList() {
         String serialNumbers = "0122,21012,312021";
-        List<String> serialNumberList = Lists.newArrayList(StringUtils.split(serialNumbers,','));
-        logger.debug("list: {}",JsonUtil.encode(serialNumberList));
+        List<String> serialNumberList = Lists.newArrayList(StringUtils.split(serialNumbers, ','));
+        logger.debug("list: {}", JsonUtil.encode(serialNumberList));
 
         StringBuilder sb = new StringBuilder(String.valueOf(116.391495)).append(",").append(39.929442);
         logger.debug(sb.toString());
@@ -274,16 +461,16 @@ public class Test {
     }
 
     @org.junit.Test
-    public void testTimestamp(){
+    public void testTimestamp() {
         Timestamp operateTime = Timestamp.valueOf("0000-00-00 00:00:00");
-        logger.debug("operateTime: {}",operateTime.after(new Date()));
+        logger.debug("operateTime: {}", operateTime.after(new Date()));
     }
 
     @org.junit.Test
-    public void testDoubleCompare(){
+    public void testDoubleCompare() {
         double a = 20.1235;
         double b = 30.2315;
-        logger.debug("f: {}", a!=b);
+        logger.debug("f: {}", a != b);
     }
 
     @org.junit.Test
@@ -304,12 +491,12 @@ public class Test {
         System.out.println(System.currentTimeMillis() - start);
     }
 
-
     @org.junit.Test
-    public void testMessage(){
-        logger.debug(MessageFormat.format("{0},{1}","jim",""));
-        logger.debug(MessageFormat.format("参数有误, ctSerial: {0}, customerSerial: {1}","1001","1225"));
-        logger.debug(MessageFormat.format("合同({0})迁移到商户({1})下面","10251","10251026"));
+    public void testMessage() {
+        logger.debug(MessageFormat.format("{0},{1}", "jim", ""));
+        logger.debug(MessageFormat.format("参数有误, ctSerial: {0}, customerSerial: {1}", "1001", "1225"));
+        logger.debug(MessageFormat.format("合同({0})迁移到商户({1})下面", "10251", "10251026"));
+        logger.debug(MessageFormat.format("任务内容构建器配置有问题, dutyTypeName:{0}","333"));
     }
 
     @org.junit.Test
@@ -318,6 +505,15 @@ public class Test {
         multiKeyMap.put("a1", "a2", "00");
         multiKeyMap.put("b1", "b2", "01");
         logger.debug(multiKeyMap.get("a1") + "");
+    }
+
+    @org.junit.Test
+    public void testStringType(){
+        String str1 = "";
+        String str2 = null;
+
+        logger.info("result1: {}",str1 instanceof String);
+        logger.info("result2: {}",str2 instanceof Object);
     }
 
     @org.junit.Test
@@ -434,6 +630,11 @@ public class Test {
     }
 
     @org.junit.Test
+    public void format(){
+        logger.info(String.format("你好: s%, s%", "jim","tom"));
+    }
+
+    @org.junit.Test
     public void ceshiListRandom() {
         List<Integer> list = Lists.newArrayList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
         for (int i = 0; i < 10; i++) {
@@ -444,7 +645,9 @@ public class Test {
 
     @org.junit.Test
     public void decimal() {
+        String grossProfit = Double.valueOf("0.03") * 100 + "%";
         logger.debug("price: {}", new BigDecimal("0.1"));
+        logger.info("grossprofit: {}", grossProfit);
     }
 
     @org.junit.Test
@@ -567,11 +770,12 @@ public class Test {
     public void getDateTimestamp() throws Exception {
         long lastSyncTime = DateUtils.parseDate("2014-05-01 00:00:00", "yyyy-MM-dd HH:mm:ss").getTime();
         logger.debug("lasttime: {}", lastSyncTime);
+
     }
 
     @org.junit.Test
     public void testenum() {
-        logger.debug(FeeType.valueOf("ALL_FREE").name());
+        logger.debug(FeeType.ALL_CHARGE.name());
     }
 
     @org.junit.Test
@@ -964,7 +1168,7 @@ public class Test {
 
     @org.junit.Test
     public void testLogger() {
-        logger.warn("测试, hds:{},id:{},seq:{}", new Object[] { 1, 2, 3 });
+        logger.warn("测试, hds:{},id:{},seq:{}", new Object[]{1, 2, 3});
     }
 
     @org.junit.Test
@@ -1088,30 +1292,29 @@ public class Test {
     }
 
     @org.junit.Test
-    public void testParallel(){
+    public void testParallel() {
         long start = System.currentTimeMillis();
 
-        Map<String,String> result = Maps.newHashMap();
+        Map<String, String> result = Maps.newHashMap();
         CountDownLatch latch = new CountDownLatch(2);
         ReentrantLock lock = new ReentrantLock();
 
         ExecutorService executor = Executors.newFixedThreadPool(4);
         executor.execute(CralwTask.build(result, latch, lock, "name"));
         executor.execute(CralwTask.build(result, latch, lock, "sex"));
-        try{
-            latch.await(400,TimeUnit.MILLISECONDS);
-        }catch (Exception e){
+        try {
+            latch.await(400, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        logger.info("result: {}, time: {}", JsonUtil.encode(result),System.currentTimeMillis()-start);
+        logger.info("RESUlt: {}, time: {}", JsonUtil.encode(result), System.currentTimeMillis() - start);
 
         executor.shutdown();
     }
 
-
-    private static class CralwTask implements Runnable{
-        private Map<String,String> result;
+    private static class CralwTask implements Runnable {
+        private Map<String, String> result;
         private CountDownLatch latch;
         private Lock lock;
         private String key;
@@ -1123,25 +1326,49 @@ public class Test {
             this.key = key;
         }
 
-        public static CralwTask build(Map<String, String> result, CountDownLatch latch, Lock lock, String key){
+        public static CralwTask build(Map<String, String> result, CountDownLatch latch, Lock lock, String key) {
             return new CralwTask(result, latch, lock, key);
         }
 
-        public void run(){
-            try{
+        public void run() {
+            try {
                 TimeUnit.MILLISECONDS.sleep(300);
 
                 lock.lock();
                 try {
                     result.put(key, String.valueOf(System.currentTimeMillis()));
-                }finally {
+                } finally {
                     lock.unlock();
                 }
-            }catch(Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             } finally {
                 latch.countDown();
             }
         }
     }
+    private static enum EditTaskStateType {
+        EDIT_WAIT("项目待编辑", 2),
+        DRAFT("项目编辑中", 3),
+        VERIFY_WAIT("项目编辑完成，待认领", 4),
+        VERIFY_IN_PROGRESS("页面待总部审核", 5),
+        VERIFY_NOT_PASS("总部驳回，待编辑", 6),
+        VERIFY_PASS("等待商家确认", 7),
+        CUSTOMER_CONFIRM_NOT_PASS("商家驳回，待编辑", 8),
+        CUSTOMER_CONFIRM_PASS("商家确认，团品待上架", 9),
+        BOOK_ONLINE("预约上架", 11),// 暂无
+        ONLINE("团品已上架", 12),
+        OFFLINE("团品已下架", 13),
+        ONLINE_UPDATE("已修改，团品待更新", 14),
+        EDIT_LEADER_REJECT("编辑Leader驳回", 15);
+
+        private String text;
+        private int code;
+
+        private EditTaskStateType(String text, int code) {
+            this.text = text;
+            this.code = code;
+        }
+
+   }
 }
