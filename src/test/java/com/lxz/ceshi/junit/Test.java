@@ -227,7 +227,7 @@ public class Test {
         BigDecimal groupPrice = new BigDecimal("120");
         BigDecimal finalPrice = new BigDecimal("117");
 
-        logger.info("grossfit: {}",(groupPrice.subtract(finalPrice)).divide(groupPrice, 2, BigDecimal.ROUND_DOWN));
+        logger.info("grossfit: {}",(groupPrice.subtract(finalPrice)).divide(groupPrice, 4, BigDecimal.ROUND_DOWN));
 
         String content = 1 + "#" + "测试";
         logger.info("ddddddd: {}, {}", StringUtils.substringBefore(content,"#"), StringUtils.substringAfter(content, "#"));
@@ -554,6 +554,15 @@ public class Test {
 
         logger.debug(MessageFormat.format("ctserial({0}) is illegal", ctId));
 
+    }
+
+    @org.junit.Test
+    public void testRanw(){
+        Random rand = new Random();
+        for(int i=0; i<10; i++){
+
+            logger.info("random: {}", rand.nextInt(20));
+        }
     }
 
     @org.junit.Test
