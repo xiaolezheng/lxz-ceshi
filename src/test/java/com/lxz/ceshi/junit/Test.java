@@ -220,6 +220,45 @@ public class Test {
     }
 
     @org.junit.Test
+    public void testIntegerToString(){
+        Map<String,Object> json = Maps.newHashMap();
+        json.put("ctserial", 2222+"");
+
+        String ctSerial = String.valueOf(json.get("ctserial"));
+        logger.info("ctSerial: {}",ctSerial);
+
+        ctSerial = String.valueOf("DDD");
+        logger.info("ctSerial: {}",ctSerial);
+        ctSerial = String.valueOf(1111111);
+        logger.info("ctSerial: {}",ctSerial);
+    }
+
+    @org.junit.Test
+    public void testStringFormat(){
+        String template = "%s-%s";
+        logger.info("ddd: {}", String.format(template,"豪华房", "1"));
+    }
+
+    @org.junit.Test
+    public void testDays(){
+        String strCurDate = DateFormatUtils.format(DateUtils.addDays(new Date(),-2), "yyyyMMdd");
+        logger.info("strCurDate: {}",strCurDate);
+    }
+
+    @org.junit.Test
+    public void testAny(){
+        List<Integer> list = Lists.newArrayList(1,2,3,4,5,6);
+        boolean flag = Iterables.any(list, new Predicate<Integer>() {
+            @Override
+            public boolean apply(Integer input) {
+                return input.intValue() == 10;
+            }
+        });
+
+        logger.info("testAny: {}",flag);
+    }
+
+    @org.junit.Test
     public void testBigDicmal(){
         BigDecimal bigDecimal = new BigDecimal("3");
         logger.info("test: {}", bigDecimal);
