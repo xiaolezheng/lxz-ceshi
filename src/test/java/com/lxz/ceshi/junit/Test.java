@@ -3,7 +3,6 @@
  */
 package com.lxz.ceshi.junit;
 
-import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URLEncoder;
@@ -43,6 +42,7 @@ import javax.script.ScriptEngineManager;
 import org.apache.commons.collections.map.MultiKeyMap;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -68,9 +68,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
+import com.google.common.primitives.Ints;
 import com.lxz.ceshi.Person;
 import com.lxz.ceshi.util.JsonUtils;
 import com.lxz.util.JsonUtil;
+import com.lxz.util.LoggerSampling;
 
 /**
  * @author: xiaole Date: 14-2-20 Time: 下午12:32
@@ -130,9 +132,8 @@ public class Test {
     }
 
     /**
-     * @param source 源字符串
-     * 包装隐私安全信息，进行中间打码处理
-     *
+     * @param source 源字符串 包装隐私安全信息，进行中间打码处理
+     * 
      * @param replaceChar 打码字符
      * @return
      */
@@ -149,10 +150,6 @@ public class Test {
         }
         return null;
     }
-
-
-
-
 
     public static int testTime() {
         long start = System.currentTimeMillis();
@@ -177,11 +174,11 @@ public class Test {
         logger.debug("print: {}", str);
     }
 
-    static class HotelBase{
+    static class HotelBase {
         private int price;
         private String name;
 
-        public HotelBase(int price,String name){
+        public HotelBase(int price, String name) {
             this.price = price;
             this.name = name;
         }
@@ -204,50 +201,72 @@ public class Test {
 
         @Override
         public String toString() {
-            return "HotelBase{" +
-                    "price=" + price +
-                    ", name='" + name + '\'' +
-                    '}';
+            return "HotelBase{" + "price=" + price + ", name='" + name + '\'' + '}';
         }
     }
 
-    public static String buildResult(String name,String... requestSource){
-        if(ArrayUtils.isNotEmpty(requestSource)){
-            return Joiner.on('_').join(name,requestSource[0]);
+    public static String buildResult(String name, String... requestSource) {
+        if (ArrayUtils.isNotEmpty(requestSource)) {
+            return Joiner.on('_').join(name, requestSource[0]);
         }
 
-        return Joiner.on('_').join(name,"");
+        return Joiner.on('_').join(name, "");
     }
 
     @org.junit.Test
-    public void testIntegerToString(){
-        Map<String,Object> json = Maps.newHashMap();
-        json.put("ctserial", 2222+"");
+    public void logSamping() throws Exception {
+        while (true) {
+            LoggerSampling.warnOfMinuteSampling(logger, "测试测试测试赛");
+            Thread.sleep(1000);
+        }
+    }
+
+    @org.junit.Test
+    public void testIntegerToString() {
+        Map<String, Object> json = Maps.newHashMap();
+        json.put("ctserial", 2222 + "");
 
         String ctSerial = String.valueOf(json.get("ctserial"));
-        logger.info("ctSerial: {}",ctSerial);
+        logger.info("ctSerial: {}", ctSerial);
 
         ctSerial = String.valueOf("DDD");
-        logger.info("ctSerial: {}",ctSerial);
+        logger.info("ctSerial: {}", ctSerial);
         ctSerial = String.valueOf(1111111);
-        logger.info("ctSerial: {}",ctSerial);
+        logger.info("ctSerial: {}", ctSerial);
     }
 
     @org.junit.Test
-    public void testStringFormat(){
+    public void range() {
+        Range<Integer> range = Range.between(10, 15, null);
+        boolean in = range.contains(12);
+
+        logger.info("range: {}", in);
+
+        boolean contain = Ints.contains(new int[] { 1, 2, 3, 4, 6, 8, 9 }, 20);
+        logger.info("contain: {}", contain);
+
+        int minute = Calendar.getInstance().get(Calendar.MINUTE);
+        logger.info("minute: {}", minute);
+
+        int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+        logger.info("houre: {}", hour);
+    }
+
+    @org.junit.Test
+    public void testStringFormat() {
         String template = "%s-%s";
-        logger.info("ddd: {}", String.format(template,"豪华房", "1"));
+        logger.info("ddd: {}", String.format(template, "豪华房", "1"));
     }
 
     @org.junit.Test
-    public void testDays(){
-        String strCurDate = DateFormatUtils.format(DateUtils.addDays(new Date(),-2), "yyyyMMdd");
-        logger.info("strCurDate: {}",strCurDate);
+    public void testDays() {
+        String strCurDate = DateFormatUtils.format(DateUtils.addDays(new Date(), -2), "yyyyMMdd");
+        logger.info("strCurDate: {}", strCurDate);
     }
 
     @org.junit.Test
-    public void testAny(){
-        List<Integer> list = Lists.newArrayList(1,2,3,4,5,6);
+    public void testAny() {
+        List<Integer> list = Lists.newArrayList(1, 2, 3, 4, 5, 6);
         boolean flag = Iterables.any(list, new Predicate<Integer>() {
             @Override
             public boolean apply(Integer input) {
@@ -255,62 +274,64 @@ public class Test {
             }
         });
 
-        logger.info("testAny: {}",flag);
+        logger.info("testAny: {}", flag);
     }
 
     @org.junit.Test
-    public void testBigDicmal(){
+    public void testBigDicmal() {
         BigDecimal bigDecimal = new BigDecimal("3");
         logger.info("test: {}", bigDecimal);
 
         BigDecimal groupPrice = new BigDecimal("120");
         BigDecimal finalPrice = new BigDecimal("117");
 
-        logger.info("grossfit: {}",(groupPrice.subtract(finalPrice)).divide(groupPrice, 4, BigDecimal.ROUND_DOWN));
+        logger.info("grossfit: {}", (groupPrice.subtract(finalPrice)).divide(groupPrice, 4, BigDecimal.ROUND_DOWN));
 
         String content = 1 + "#" + "测试";
-        logger.info("ddddddd: {}, {}", StringUtils.substringBefore(content,"#"), StringUtils.substringAfter(content, "#"));
+        logger.info("ddddddd: {}, {}", StringUtils.substringBefore(content, "#"),
+                StringUtils.substringAfter(content, "#"));
     }
 
     @org.junit.Test
-    public void testCCCC(){
+    public void testCCCC() {
         logger.info(buildResult("jim"));
-        logger.info(buildResult("tom", new String[]{"ps"}));
+        logger.info(buildResult("tom", new String[] { "ps" }));
     }
 
     @org.junit.Test
-    public void testJoiners(){
-        logger.info(Joiner.on('_').join("crm_task","tuan","ps"));
+    public void testJoiners() {
+        logger.info(Joiner.on('_').join("crm_task", "tuan", "ps"));
     }
 
     @org.junit.Test
-    public void testEquails(){
+    public void testEquails() {
         logger.info("flag: {}", "leon".equals("Leon"));
         logger.info("flag: {}", "leon".equalsIgnoreCase("Leon"));
     }
 
     @org.junit.Test
-    public void testSets(){
-        Set<Integer> con = Sets.newHashSet(1,2,6);
+    public void testSets() {
+        Set<Integer> con = Sets.newHashSet(1, 2, 6);
 
-        logger.info("{}",con.contains(2));
-        logger.info("{}",con.contains(5));
+        logger.info("{}", con.contains(2));
+        logger.info("{}", con.contains(5));
 
-        List<Integer> lists = Lists.newArrayList(1,2,3);
+        List<Integer> lists = Lists.newArrayList(1, 2, 3);
         logger.info("flag: {}", lists.contains(2));
         logger.info("flag: {}", lists.contains(0));
     }
 
     @org.junit.Test
-    public void sortSS(){
-        List<HotelBase> data = Lists.newArrayList(new HotelBase(5, "xiecheng"), new HotelBase(2, "aaa"), new HotelBase(2, "yilong"), new HotelBase(3,"yilong"),new HotelBase(2,"quanr"));
+    public void sortSS() {
+        List<HotelBase> data = Lists.newArrayList(new HotelBase(5, "xiecheng"), new HotelBase(2, "aaa"), new HotelBase(
+                2, "yilong"), new HotelBase(3, "yilong"), new HotelBase(2, "quanr"));
 
         // 按价格排序
         Collections.sort(data, new Comparator<HotelBase>() {
             @Override
             public int compare(HotelBase o1, HotelBase o2) {
-                if(o1.getPrice() == o2.getPrice()){
-                    if(o1.getName().equals("quanr")){
+                if (o1.getPrice() == o2.getPrice()) {
+                    if (o1.getName().equals("quanr")) {
                         return -1;
                     }
                 }
@@ -319,7 +340,7 @@ public class Test {
             }
         });
 
-        for(HotelBase base: data) {
+        for (HotelBase base : data) {
             logger.info("{}", base);
         }
     }
@@ -327,27 +348,48 @@ public class Test {
     @org.junit.Test
     public void testJsonToMap() {
 
-       /* String json ="{\"detail\":{\"checkIn\":\"2014-09-28\",\"checkOut\":\"2014-09-30\",\"hotelSeq\":\"beijing_city_22744\",\"priceInfo\":[{\"price\":24,\"wrapperId\":\"wictrip0000\"},{\"price\":139,\"wrapperId\":\"wiqunarqta2\"}],\"roomCategory\":\"豪华标准房\",\"roomIds\":[\"1111\",\"22222\"],\"type\":2,\"serialNumber\":\"CH01408777\",\"hotelName\":\"去呼呼北京鸟巢爱特家酒店公寓\",\"userId\":\"zhongjie.wang\"},\"kpName\":\"撒旦法\",\"hotel\":\"去呼呼北京鸟巢爱特家酒店公寓\",\"customerPhone\":\"--400-890-2060\",\"type\":13,\"serialNum\":\"CH01408777\",\"kpPhone\":\"13811111111\"}";
+        /*
+         * String json =
+         * "{\"detail\":{\"checkIn\":\"2014-09-28\",\"checkOut\":\"2014-09-30\",\"hotelSeq\":\"beijing_city_22744\",\"priceInfo\":[{\"price\":24,\"wrapperId\":\"wictrip0000\"},{\"price\":139,\"wrapperId\":\"wiqunarqta2\"}],\"roomCategory\":\"豪华标准房\",\"roomIds\":[\"1111\",\"22222\"],\"type\":2,\"serialNumber\":\"CH01408777\",\"hotelName\":\"去呼呼北京鸟巢爱特家酒店公寓\",\"userId\":\"zhongjie.wang\"},\"kpName\":\"撒旦法\",\"hotel\":\"去呼呼北京鸟巢爱特家酒店公寓\",\"customerPhone\":\"--400-890-2060\",\"type\":13,\"serialNum\":\"CH01408777\",\"kpPhone\":\"13811111111\"}"
+         * ; Map<String,String> detailMap = buildMap(json); logger.info("dddddddddddddd: {}",detailMap.get("hotelSeq"));
+         */
 
-        Map<String,String> detailMap = buildMap(json);
-        logger.info("dddddddddddddd: {}",detailMap.get("hotelSeq"));*/
+        Map<String, Object> content = Maps.newHashMap();
+        content.put("name", "jim");
+        logger.info("============ name: {}, {}", (String) content.get("name"), (String) content.get("sex"));
 
-        Map<String,Object> content = Maps.newHashMap();
-        content.put("name","jim");
-        logger.info("============ name: {}, {}", (String)content.get("name"), (String)content.get("sex"));
-
-        if("null".equals((String)content.get("sex"))){
+        if ("null".equals((String) content.get("sex"))) {
             logger.info("----------------------");
         }
 
     }
 
-    public Map<String,String> buildMap(String json){
+    public Map<String, String> buildMap(String json) {
         if (StringUtils.isNotBlank(json)) {
-           return JsonUtils.decode(json, "detail", Map.class);
+            return JsonUtils.decode(json, "detail", Map.class);
         }
 
         return Maps.newHashMap();
+    }
+
+    @org.junit.Test
+    public void testGuava() {
+
+        try {
+            List<Integer> list = Lists.newArrayList(1, 3, 0, 5, 6);
+
+            List<Integer> result = Lists.transform(list, new Function<Integer, Integer>() {
+                @Override
+                public Integer apply(Integer input) {
+                    return 0 / input;
+                }
+            });
+            //logger.info("eee: {}", JsonUtils.encode(result));
+            result.get(4);
+        } catch (Exception e) {
+            logger.error("dee", e);
+        }
+
     }
 
     @org.junit.Test
@@ -377,7 +419,7 @@ public class Test {
         // 返现价格
         BigDecimal oprice = new BigDecimal("0.23");
 
-        logger.info("result: {}", price.doubleValue()+"");
+        logger.info("result: {}", price.doubleValue() + "");
         logger.info("result: {}", price.add(oprice));
         logger.info("result: {}", price.compareTo(oprice));
     }
@@ -403,7 +445,8 @@ public class Test {
         Set<Integer> PS_PRODUCTTYPE_SET = ImmutableSet.of(3, 4);
         logger.debug("flag: {}", PS_PRODUCTTYPE_SET.contains(3));
 
-        logger.debug(MessageFormat.format("解析消息失败, message({0}), 详情({1})", "ceshi", PS_PRODUCTTYPE_SET));
+        logger.info(MessageFormat.format("解析消息失败, message({0}), 详情({1})", "ceshi", PS_PRODUCTTYPE_SET));
+        logger.info(String.format("解析消息失败,%s,%s", 22, 33));
     }
 
     @org.junit.Test
@@ -535,7 +578,7 @@ public class Test {
         logger.debug(MessageFormat.format("{0},{1}", "jim", ""));
         logger.debug(MessageFormat.format("参数有误, ctSerial: {0}, customerSerial: {1}", "1001", "1225"));
         logger.debug(MessageFormat.format("合同({0})迁移到商户({1})下面", "10251", "10251026"));
-        logger.debug(MessageFormat.format("任务内容构建器配置有问题, dutyTypeName:{0}","333"));
+        logger.debug(MessageFormat.format("任务内容构建器配置有问题, dutyTypeName:{0}", "333"));
     }
 
     @org.junit.Test
@@ -547,12 +590,12 @@ public class Test {
     }
 
     @org.junit.Test
-    public void testStringType(){
+    public void testStringType() {
         String str1 = "";
         String str2 = null;
 
-        logger.info("result1: {}",str1 instanceof String);
-        logger.info("result2: {}",str2 instanceof Object);
+        logger.info("result1: {}", str1 instanceof String);
+        logger.info("result2: {}", str2 instanceof Object);
     }
 
     @org.junit.Test
@@ -596,9 +639,9 @@ public class Test {
     }
 
     @org.junit.Test
-    public void testRanw(){
+    public void testRanw() {
         Random rand = new Random();
-        for(int i=0; i<10; i++){
+        for (int i = 0; i < 10; i++) {
 
             logger.info("random: {}", rand.nextInt(20));
         }
@@ -678,8 +721,8 @@ public class Test {
     }
 
     @org.junit.Test
-    public void format(){
-        logger.info(String.format("你好: s%, s%", "jim","tom"));
+    public void format() {
+        logger.info(String.format("你好: s%, s%", "jim", "tom"));
     }
 
     @org.junit.Test
@@ -1216,7 +1259,7 @@ public class Test {
 
     @org.junit.Test
     public void testLogger() {
-        logger.warn("测试, hds:{},id:{},seq:{}", new Object[]{1, 2, 3});
+        logger.warn("测试, hds:{},id:{},seq:{}", new Object[] { 1, 2, 3 });
     }
 
     @org.junit.Test
@@ -1395,20 +1438,12 @@ public class Test {
             }
         }
     }
+
     private static enum EditTaskStateType {
-        EDIT_WAIT("项目待编辑", 2),
-        DRAFT("项目编辑中", 3),
-        VERIFY_WAIT("项目编辑完成，待认领", 4),
-        VERIFY_IN_PROGRESS("页面待总部审核", 5),
-        VERIFY_NOT_PASS("总部驳回，待编辑", 6),
-        VERIFY_PASS("等待商家确认", 7),
-        CUSTOMER_CONFIRM_NOT_PASS("商家驳回，待编辑", 8),
-        CUSTOMER_CONFIRM_PASS("商家确认，团品待上架", 9),
-        BOOK_ONLINE("预约上架", 11),// 暂无
-        ONLINE("团品已上架", 12),
-        OFFLINE("团品已下架", 13),
-        ONLINE_UPDATE("已修改，团品待更新", 14),
-        EDIT_LEADER_REJECT("编辑Leader驳回", 15);
+        EDIT_WAIT("项目待编辑", 2), DRAFT("项目编辑中", 3), VERIFY_WAIT("项目编辑完成，待认领", 4), VERIFY_IN_PROGRESS("页面待总部审核", 5), VERIFY_NOT_PASS(
+                "总部驳回，待编辑", 6), VERIFY_PASS("等待商家确认", 7), CUSTOMER_CONFIRM_NOT_PASS("商家驳回，待编辑", 8), CUSTOMER_CONFIRM_PASS(
+                "商家确认，团品待上架", 9), BOOK_ONLINE("预约上架", 11), // 暂无
+        ONLINE("团品已上架", 12), OFFLINE("团品已下架", 13), ONLINE_UPDATE("已修改，团品待更新", 14), EDIT_LEADER_REJECT("编辑Leader驳回", 15);
 
         private String text;
         private int code;
@@ -1418,5 +1453,5 @@ public class Test {
             this.code = code;
         }
 
-   }
+    }
 }

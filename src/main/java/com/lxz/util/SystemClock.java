@@ -1,5 +1,8 @@
 package com.lxz.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -13,12 +16,13 @@ import java.util.concurrent.atomic.AtomicLong;
  * 
  */
 public class SystemClock {
+    private static final Logger logger = LoggerFactory.getLogger(SystemClock.class);
 
     private final long precision;
     private final AtomicLong now;
 
     public SystemClock(long precision) {
-        this.precision = precision;
+        this.precision = precision * 1000;
         now = new AtomicLong(System.currentTimeMillis());
         scheduleClockUpdating();
     }
@@ -46,5 +50,16 @@ public class SystemClock {
 
     public long precision() {
         return precision;
+    }
+
+    public static void main(String[] args){
+        SystemClock clock = new SystemClock(5000);
+        long lastTime = clock.now();
+        while (true){
+            if(clock.now() != lastTime ){
+                logger.info(".....................................");
+                lastTime = clock.now();
+            }
+        }
     }
 }
