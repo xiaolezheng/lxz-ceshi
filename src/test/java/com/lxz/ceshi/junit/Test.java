@@ -3,6 +3,8 @@
  */
 package com.lxz.ceshi.junit;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URLEncoder;
@@ -35,6 +37,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -49,10 +52,17 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.time.DateFormatUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
+import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StopWatch;
 
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -213,6 +223,166 @@ public class Test {
         return Joiner.on('_').join(name, "");
     }
 
+
+    @org.junit.Test
+    public void testddOptional(){
+        List<Integer> list = null;
+        Optional<List<Integer>> optional = Optional.fromNullable(list);
+        logger.info("ddd0000: {}",optional.orNull() );
+        //logger.info("ddd0011: {}",optional.get() );
+        if(optional.isPresent()){
+            logger.info("ddd22: {}", optional.get());
+        } else {
+            logger.info("ddd33: {}", optional.orNull());
+        }
+    }
+
+    @org.junit.Test
+    public void testTimeUnit(){
+        logger.info("timeunit: {}", TimeUnit.SECONDS.toMillis(2));
+    }
+
+    @org.junit.Test
+    public void testMbean(){
+        final ThreadMXBean mbean = ManagementFactory.getThreadMXBean();
+
+    }
+
+    @org.junit.Test
+    public void testSpringss(){
+        String productId = "-2225514";
+        logger.info("product: {}", productId);
+
+        productId = StringUtils.substringAfter( productId ,"-");
+        logger.info("product: {}", productId);
+
+        productId = StringUtils.substringAfter( productId ,"-");
+        logger.info("product: {}", productId);
+    }
+
+    @org.junit.Test
+    public void homePage() throws Exception {
+        final WebClient webClient = new WebClient();
+        final HtmlPage page = webClient.getPage("http://htmlunit.sourceforge.net");
+        Assert.assertEquals("HtmlUnit - Welcome to HtmlUnit", page.getTitleText());
+
+        final String pageAsXml = page.asXml();
+        Assert.assertTrue(pageAsXml.contains("<body class=\"composite\">"));
+
+        final String pageAsText = page.asText();
+        Assert.assertTrue(pageAsText.contains("Support for the HTTP and HTTPS protocols"));
+
+        logger.info("=======================================");
+        logger.info(page.asText());
+        logger.info("=======================================");
+        logger.info(page.asXml());
+
+        webClient.closeAllWindows();
+    }
+
+    @org.junit.Test
+    public void submittingForm() throws Exception {
+        final WebClient webClient = new WebClient();
+
+        // Get the first page
+        final HtmlPage page1 = webClient.getPage("http://oa.corp.qunar.com/seeyon/index.jsp");
+
+        // Get the form that we are dealing with and within that form,
+        // find the submit button and the field that we want to change.
+        final HtmlForm form = page1.getFormByName("loginform");
+
+        HtmlSubmitInput submitButton = (HtmlSubmitInput)page1.getElementById("submitBtn");
+
+        //final HtmlSubmitInput button = form.getInputByName("submitBtn");
+        final HtmlTextInput textUserName = form.getInputByName("login.username");
+        final HtmlPasswordInput textPwd = form.getInputByName("login.password");
+
+        // Change the value of the text field
+        textUserName.setValueAttribute("xiaoluo.zheng");
+        textPwd.setValueAttribute("cC!123456");
+
+
+        // Now submit the form by clicking the button and get back the second page.
+        final HtmlPage page2 = submitButton.click();
+
+        logger.info("========================================");
+        logger.info(page2.asText());
+
+        webClient.closeAllWindows();
+    }
+
+    @org.junit.Test
+    public void testdOptional(){
+        Object value = null;
+        RoomType roomType = (RoomType) value;
+        System.out.println("roomType:"+ roomType);
+    }
+
+    @org.junit.Test
+    public void testContains(){
+        String[] sources = new String[]{"双人小标房，钟点房免费WiFi", "双人小标房，免费WiFi", "钟点房双人小标房，免费WiFi", "双人小标房，免费WiFi钟点房", "双人小标房，免费WiFi小时房"};
+        String[] searchs = new String[]{"钟点房","小时房"};
+        long start = System.currentTimeMillis();
+        for(String source: sources) {
+            logger.info("result1: {}",StringUtils.contains(source,searchs[0]) || StringUtils.contains(source,searchs[1]) );
+        }
+        long time = System.currentTimeMillis() - start;
+
+        logger.info("time: {}", time);
+
+
+
+        start = System.currentTimeMillis();
+        Pattern pattern = Pattern.compile("钟点房|小时房");
+        for(String source: sources) {
+            logger.info("result2: {}", pattern.matcher(source).find());
+        }
+
+        time = System.currentTimeMillis() - start;
+        logger.info("time2: {}", time);
+    }
+
+    @org.junit.Test
+    public void testFilter(){
+        List<Integer> sourceList = Lists.newArrayList(2,3,5,6,7,8,9,20);
+
+
+        logger.info("testFilter: {}", JsonUtils.encode(sourceList));
+
+        Iterable<Integer> integerIterable = Iterables.filter(sourceList, new Predicate<Integer>() {
+            @Override
+            public boolean apply(Integer input) {
+                return input%21 == 0;
+            }
+        });
+
+        logger.info("testFilter: {}", JsonUtils.encode(Lists.newArrayList(integerIterable)));
+    }
+
+    @org.junit.Test
+    public void testDDDD(){
+        Object d = org.apache.commons.lang3.tuple.Pair.of("jim", "19");
+        org.apache.commons.lang3.tuple.Pair<String,String> pair = (org.apache.commons.lang3.tuple.Pair)d;
+        logger.info("{}, {}",pair.getLeft(), pair.getRight());
+    }
+    
+    @org.junit.Test
+    public void testFormat(){
+        String format = "duty_ps_parent_product_type_%s";
+        //logger.info("format: {}",String.format(format,1));
+
+        String roomId = "1348716_41190";
+
+        logger.info("ddddddddddd-1: {}", roomId);
+
+        roomId = StringUtils.substringAfter(roomId, "-");
+        logger.info("ddddddddddd-2: {}", roomId);
+
+        String prefix = "1348716";
+
+        logger.info("ddddddddddd-3: {}", StringUtils.startsWith(roomId, prefix));
+    }
+
     @org.junit.Test
     public void logSamping() throws Exception {
         while (true) {
@@ -225,6 +395,8 @@ public class Test {
     public void testIntegerToString() {
         Map<String, Object> json = Maps.newHashMap();
         json.put("ctserial", 2222 + "");
+
+        logger.info("dddd: {}", (String)json.get("name"));
 
         String ctSerial = String.valueOf(json.get("ctserial"));
         logger.info("ctSerial: {}", ctSerial);
