@@ -33,6 +33,7 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -223,6 +224,47 @@ public class Test {
         return Joiner.on('_').join(name, "");
     }
 
+    @org.junit.Test
+    public void testssss(){
+        String status = "Y".equalsIgnoreCase("Y") ? "1" : "0";
+        logger.info("status: {}",status);
+
+        status = "Y".equalsIgnoreCase("y") ? "1" : "0";
+        logger.info("status: {}",status);
+
+        status = "Y".equalsIgnoreCase("N") ? "1" : "0";
+        logger.info("status: {}",status);
+
+        status = "Y".equalsIgnoreCase(null) ? "1" : "0";
+        logger.info("status: {}",status);
+    }
+
+    @org.junit.Test
+    public void testRandom(){
+        ThreadLocalRandom r = ThreadLocalRandom.current();
+        //Random r = new Random();
+
+        int value_min_exp = (int) TimeUnit.HOURS.toSeconds(24);
+        int value_max_exp = (int) TimeUnit.HOURS.toSeconds(26);
+        logger.info("exp: {}, max_exp: {}", value_min_exp, value_max_exp);
+
+        long startTime = System.currentTimeMillis();
+
+        int Min = value_min_exp;
+        int Max = value_max_exp;
+
+        for(int i=0; i<30; i++){
+            //int result = Min + (int)(Math.random() * ((Max - Min) + 1));
+            int result = ThreadLocalRandom.current().nextInt(Min, Max);
+            logger.info("result: {}", result);
+            //logger.info("r: {}, r1: {}", r.nextInt(30), localRandom.nextInt(30));
+        }
+
+        long time = System.currentTimeMillis() - startTime;
+        logger.info("time: {}", time);
+
+
+    }
 
     @org.junit.Test
     public void testddOptional(){
@@ -1038,6 +1080,9 @@ public class Test {
 
     @org.junit.Test
     public void testenum() {
+        FeeType emum1 = FeeType.ALL_CHARGE;
+        logger.info("eee1: {}", emum1 != FeeType.ALL_CHARGE);
+        logger.info("eee2: {}", emum1 == FeeType.ALL_CHARGE);
         logger.debug(FeeType.ALL_CHARGE.name());
     }
 

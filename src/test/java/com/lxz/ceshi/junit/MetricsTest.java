@@ -5,8 +5,9 @@ package com.lxz.ceshi.junit;
 
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Slf4jReporter;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import com.codahale.metrics.Timer;
+import com.codahale.metrics.health.HealthCheckRegistry;
+import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +15,7 @@ import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Joiner;
 
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -36,6 +38,9 @@ public class MetricsTest {
             .convertDurationsTo(TimeUnit.MILLISECONDS)
             .build();
 
+    private static final HealthCheckRegistry healthChecks = new HealthCheckRegistry();
+
+
     @BeforeClass
     public static void before(){
         reporter.start(1, TimeUnit.SECONDS);
@@ -53,10 +58,25 @@ public class MetricsTest {
 
     @org.junit.Test
     public void testMeter() throws Exception{
+        Random random = new Random();
         Meter requests = register.meter(name("testMeter", "requests"));
         for(int i=0; i<100000; i++){
             requests.mark();
-            TimeUnit.MILLISECONDS.sleep(2);
+            TimeUnit.MILLISECONDS.sleep(random.nextInt(10));
+        }
+    }
+
+    @org.junit.Test
+    public void testTimer() throws Exception{
+        Random random = new Random();
+        Timer responses = register.timer(name("testTimer", "responses"));
+        for(int i=0; i<10000; i++) {
+            final Timer.Context context = responses.time();
+            try {
+                TimeUnit.MILLISECONDS.sleep(random.nextInt(10));
+            } finally {
+                context.stop();
+            }
         }
     }
 
