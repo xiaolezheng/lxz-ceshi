@@ -225,6 +225,23 @@ public class Test {
     }
 
     @org.junit.Test
+    public void testImmutableSet(){
+        Set<String> stringSet = ImmutableSet.copyOf(new String[]{"222","333","111"});
+        logger.info("dddggggggggggggggggggggg: {}", stringSet.contains("111"));
+        logger.info("ddggggggggggggggggggggggd: {}", stringSet.contains("1113"));
+
+        stringSet.add("0000");
+    }
+
+    @org.junit.Test
+    public void testByte(){
+        byte a = Byte.valueOf("0");
+        byte b = Byte.valueOf("1");
+        byte c = Byte.valueOf("2");
+        logger.info("testByte: {}, {}, {}", a, b,c );
+    }
+
+    @org.junit.Test
     public void testssss(){
         String status = "Y".equalsIgnoreCase("Y") ? "1" : "0";
         logger.info("status: {}",status);

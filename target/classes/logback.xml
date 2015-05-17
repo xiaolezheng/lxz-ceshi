@@ -28,6 +28,10 @@
         <appender-ref ref="console"/>
     </logger>
 
+    <logger name="com.linkedin" level="debug" additivity="false">
+        <appender-ref ref="console"/>
+    </logger>
+
     <root level="debug">
         <appender-ref ref="FILE"/>
         <appender-ref ref="console"/>

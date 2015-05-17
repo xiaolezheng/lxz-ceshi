@@ -68,6 +68,9 @@ public class Test {
         //System.out.println(innerSql);
 
         System.out.println(OperateType.ADD.ordinal());
+
+
+        System.out.println(String.format("你好啊, %s, %s,%s", 1,2,"jim"));
     }
 
     private static enum OperateType{
