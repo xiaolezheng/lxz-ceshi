@@ -11,10 +11,10 @@ public class LongEventHandler implements EventHandler<LongEvent> {
 
     public void onEvent(LongEvent event, long sequence, boolean endOfBatch) {
        logger.debug("Event: " + event+" | sequence: "+sequence);
-        try {
+        /*try {
             TimeUnit.MILLISECONDS.sleep(50);
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 }

@@ -3,6 +3,52 @@
  */
 package com.lxz.ceshi.junit;
 
+import com.gargoylesoftware.htmlunit.WebClient;
+import com.gargoylesoftware.htmlunit.html.HtmlForm;
+import com.gargoylesoftware.htmlunit.html.HtmlPage;
+import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
+import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
+import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.base.Splitter;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.MapDifference;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
+import com.google.common.primitives.Ints;
+import com.lxz.ceshi.Person;
+import com.lxz.ceshi.util.JsonUtils;
+import com.lxz.util.JsonUtil;
+import com.lxz.util.LoggerSampling;
+import org.apache.commons.collections.map.MultiKeyMap;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.Range;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.commons.lang3.time.DateFormatUtils;
+import org.apache.commons.lang3.time.DateUtils;
+import org.apache.commons.lang3.time.FastDateFormat;
+import org.apache.commons.lang3.tuple.Pair;
+import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.StopWatch;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.math.BigDecimal;
@@ -28,6 +74,7 @@ import java.util.concurrent.CompletionService;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
@@ -36,54 +83,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
-
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-
-import org.apache.commons.collections.map.MultiKeyMap;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.Range;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-import org.apache.commons.lang3.time.DateFormatUtils;
-import org.apache.commons.lang3.time.DateUtils;
-import org.apache.commons.lang3.time.FastDateFormat;
-import org.junit.Assert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.util.StopWatch;
-
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.html.HtmlForm;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlPasswordInput;
-import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
-import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.base.Splitter;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Ordering;
-import com.google.common.collect.Sets;
-import com.google.common.primitives.Ints;
-import com.lxz.ceshi.Person;
-import com.lxz.ceshi.util.JsonUtils;
-import com.lxz.util.JsonUtil;
-import com.lxz.util.LoggerSampling;
+import java.util.stream.Collectors;
 
 /**
  * @author: xiaole Date: 14-2-20 Time: 下午12:32
@@ -95,6 +99,9 @@ public class Test {
     private static final String FLAG = "OK";
     private static Cache<String, Integer> cacheCounter = CacheBuilder.newBuilder()
             .expireAfterWrite(2, TimeUnit.SECONDS).build();
+
+    private volatile int MAX = 100;
+    private AtomicInteger counter = new AtomicInteger(0);
 
     public static enum FeeType {
         ALL_FREE, PART_FREE, ALL_CHARGE, UNKNOWN;
@@ -143,8 +150,7 @@ public class Test {
     }
 
     /**
-     * @param source 源字符串 包装隐私安全信息，进行中间打码处理
-     * 
+     * @param source      源字符串 包装隐私安全信息，进行中间打码处理
      * @param replaceChar 打码字符
      * @return
      */
@@ -214,6 +220,15 @@ public class Test {
         public String toString() {
             return "HotelBase{" + "price=" + price + ", name='" + name + '\'' + '}';
         }
+
+        @Override
+        public boolean equals(Object hotelBase) {
+            if (hotelBase instanceof HotelBase) {
+                return StringUtils.equals(((HotelBase) hotelBase).getName(), this.getName());
+            }
+
+            return false;
+        }
     }
 
     public static String buildResult(String name, String... requestSource) {
@@ -224,9 +239,114 @@ public class Test {
         return Joiner.on('_').join(name, "");
     }
 
+    public void testParams(Object... arguments) {
+        Integer a = (Integer) arguments[0];
+        logger.info("ddd: {}", a.intValue());
+    }
+
     @org.junit.Test
-    public void testImmutableSet(){
-        Set<String> stringSet = ImmutableSet.copyOf(new String[]{"222","333","111"});
+    public void testdInteger(){
+        Integer a = 10;
+        Integer c = 10;
+        Integer d = 267;
+        Integer e = 267;
+        int b = 10;
+
+        if(a == b){
+            logger.info("true");
+        } else {
+            logger.info("false");
+        }
+
+        if(a == c){
+            logger.info("true");
+        } else {
+            logger.info("false");
+        }
+
+        if(d == e){
+            logger.info("true");
+        } else {
+            logger.info("false");
+        }
+    }
+
+
+    @org.junit.Test
+    public void testPrintPair(){
+        Pair<HotelBase,HotelBase> pair = Pair.of(new HotelBase(22,"jim"), new HotelBase(25, "tom"));
+        logger.info("left: {}, right: {}", pair.getLeft(), pair.getRight());
+    }
+
+    @org.junit.Test
+    public void testTTTTTTTT() {
+        for (int i = 0; i < 10; i++) {
+            try {
+                if (i % 2 == 0) {
+                    logger.info("$ :{}", i);
+                    continue;
+                }
+            } finally {
+                logger.info("index: {}", i);
+            }
+        }
+    }
+
+    @org.junit.Test
+    public void testTTTTT() {
+        Integer a = new Integer("2");
+        testParams(a);
+    }
+
+    @org.junit.Test
+    public void testSetEach(){
+        Set<Integer> sets = Sets.newHashSet(1,2,3,4,5);
+        for(int i: sets){
+            logger.info("i: {}",i);
+        }
+
+        sets.add(6);
+        sets.add(6);
+
+        sets.forEach( item -> logger.info("item: {}", item));
+    }
+
+    @org.junit.Test
+    public void testSetDiff() {
+        Set<Integer> set1 = Sets.newHashSet(1,2,3,4);
+        Set<Integer> set2 = Sets.newHashSet(2,3,4,7);
+
+        Sets.SetView<Integer> view = Sets.difference(set1, set2);
+
+        logger.info("view : {}", Lists.newArrayList(view));
+
+        view = Sets.difference(set2, set1);
+
+        logger.info("view : {}", Lists.newArrayList(view));
+
+        view = Sets.symmetricDifference(set1, set2);
+
+        logger.info("view : {}", Lists.newArrayList(view));
+    }
+
+    @org.junit.Test
+    public void testMapDiff() {
+        //找出2个Map的不同之处与相同之处，以Map形式返回
+        ImmutableMap<String, Integer> oneMap = ImmutableMap.of("key1", 1, "key2", 2);
+        ImmutableMap<String, Integer> twoMap = ImmutableMap.of("key11", 11, "key2", 2);
+        MapDifference<String, Integer> diffHandle = Maps.difference(oneMap, twoMap);
+        Map<String, Integer> commonMap = diffHandle.entriesInCommon();//{"key2",2},若无共同Entry，则返回长度为0的Map
+        Map<String, Integer> diffOnLeft = diffHandle.entriesOnlyOnLeft();//返回左边的Map中不同或者特有的元素
+        Map<String, Integer> diffOnRight = diffHandle.entriesOnlyOnRight();//返回右边的Map中不同或者特有的元素
+
+        logger.info("common: {}", commonMap);
+        logger.info("diffOnLeft: {}", diffOnLeft);
+        logger.info("diffOnRight: {}", diffOnRight);
+    }
+
+    @org.junit.Test
+    public void testImmutableSet() {
+        Set<String> stringSet = ImmutableSet.copyOf(new String[]{"222", "333", "111"});
         logger.info("dddggggggggggggggggggggg: {}", stringSet.contains("111"));
         logger.info("ddggggggggggggggggggggggd: {}", stringSet.contains("1113"));
 
@@ -234,30 +354,30 @@ public class Test {
     }
 
     @org.junit.Test
-    public void testByte(){
+    public void testByte() {
         byte a = Byte.valueOf("0");
         byte b = Byte.valueOf("1");
         byte c = Byte.valueOf("2");
-        logger.info("testByte: {}, {}, {}", a, b,c );
+        logger.info("testByte: {}, {}, {}", a, b, c);
     }
 
     @org.junit.Test
-    public void testssss(){
+    public void testssss() {
         String status = "Y".equalsIgnoreCase("Y") ? "1" : "0";
-        logger.info("status: {}",status);
+        logger.info("status: {}", status);
 
         status = "Y".equalsIgnoreCase("y") ? "1" : "0";
-        logger.info("status: {}",status);
+        logger.info("status: {}", status);
 
         status = "Y".equalsIgnoreCase("N") ? "1" : "0";
-        logger.info("status: {}",status);
+        logger.info("status: {}", status);
 
         status = "Y".equalsIgnoreCase(null) ? "1" : "0";
-        logger.info("status: {}",status);
+        logger.info("status: {}", status);
     }
 
     @org.junit.Test
-    public void testRandom(){
+    public void testRandom() {
         ThreadLocalRandom r = ThreadLocalRandom.current();
         //Random r = new Random();
 
@@ -270,7 +390,7 @@ public class Test {
         int Min = value_min_exp;
         int Max = value_max_exp;
 
-        for(int i=0; i<30; i++){
+        for (int i = 0; i < 30; i++) {
             //int result = Min + (int)(Math.random() * ((Max - Min) + 1));
             int result = ThreadLocalRandom.current().nextInt(Min, Max);
             logger.info("result: {}", result);
@@ -284,12 +404,25 @@ public class Test {
     }
 
     @org.junit.Test
-    public void testddOptional(){
+    public void testStream() {
+        List<Integer> list = Lists.newArrayList(2, 3, 5, 6, 7);
+        List<Integer> dist = list.stream().map((item) -> {
+            item = item + 2;
+            return item * item;
+        }).collect(Collectors.toList());
+        logger.info("stream: {}", dist);
+
+        long count = dist.stream().filter(item -> item % 2 == 0).count();
+        logger.info("count: {}", count);
+    }
+
+    @org.junit.Test
+    public void testddOptional() {
         List<Integer> list = null;
         Optional<List<Integer>> optional = Optional.fromNullable(list);
-        logger.info("ddd0000: {}",optional.orNull() );
+        logger.info("ddd0000: {}", optional.orNull());
         //logger.info("ddd0011: {}",optional.get() );
-        if(optional.isPresent()){
+        if (optional.isPresent()) {
             logger.info("ddd22: {}", optional.get());
         } else {
             logger.info("ddd33: {}", optional.orNull());
@@ -297,25 +430,25 @@ public class Test {
     }
 
     @org.junit.Test
-    public void testTimeUnit(){
+    public void testTimeUnit() {
         logger.info("timeunit: {}", TimeUnit.SECONDS.toMillis(2));
     }
 
     @org.junit.Test
-    public void testMbean(){
+    public void testMbean() {
         final ThreadMXBean mbean = ManagementFactory.getThreadMXBean();
 
     }
 
     @org.junit.Test
-    public void testSpringss(){
+    public void testSpringss() {
         String productId = "-2225514";
         logger.info("product: {}", productId);
 
-        productId = StringUtils.substringAfter( productId ,"-");
+        productId = StringUtils.substringAfter(productId, "-");
         logger.info("product: {}", productId);
 
-        productId = StringUtils.substringAfter( productId ,"-");
+        productId = StringUtils.substringAfter(productId, "-");
         logger.info("product: {}", productId);
     }
 
@@ -350,7 +483,7 @@ public class Test {
         // find the submit button and the field that we want to change.
         final HtmlForm form = page1.getFormByName("loginform");
 
-        HtmlSubmitInput submitButton = (HtmlSubmitInput)page1.getElementById("submitBtn");
+        HtmlSubmitInput submitButton = (HtmlSubmitInput) page1.getElementById("submitBtn");
 
         //final HtmlSubmitInput button = form.getInputByName("submitBtn");
         final HtmlTextInput textUserName = form.getInputByName("login.username");
@@ -371,29 +504,28 @@ public class Test {
     }
 
     @org.junit.Test
-    public void testdOptional(){
+    public void testdOptional() {
         Object value = null;
         RoomType roomType = (RoomType) value;
-        System.out.println("roomType:"+ roomType);
+        System.out.println("roomType:" + roomType);
     }
 
     @org.junit.Test
-    public void testContains(){
+    public void testContains() {
         String[] sources = new String[]{"双人小标房，钟点房免费WiFi", "双人小标房，免费WiFi", "钟点房双人小标房，免费WiFi", "双人小标房，免费WiFi钟点房", "双人小标房，免费WiFi小时房"};
-        String[] searchs = new String[]{"钟点房","小时房"};
+        String[] searchs = new String[]{"钟点房", "小时房"};
         long start = System.currentTimeMillis();
-        for(String source: sources) {
-            logger.info("result1: {}",StringUtils.contains(source,searchs[0]) || StringUtils.contains(source,searchs[1]) );
+        for (String source : sources) {
+            logger.info("result1: {}", StringUtils.contains(source, searchs[0]) || StringUtils.contains(source, searchs[1]));
         }
         long time = System.currentTimeMillis() - start;
 
         logger.info("time: {}", time);
 
 
-
         start = System.currentTimeMillis();
         Pattern pattern = Pattern.compile("钟点房|小时房");
-        for(String source: sources) {
+        for (String source : sources) {
             logger.info("result2: {}", pattern.matcher(source).find());
         }
 
@@ -402,8 +534,8 @@ public class Test {
     }
 
     @org.junit.Test
-    public void testFilter(){
-        List<Integer> sourceList = Lists.newArrayList(2,3,5,6,7,8,9,20);
+    public void testFilter() {
+        List<Integer> sourceList = Lists.newArrayList(2, 3, 5, 6, 7, 8, 9, 20);
 
 
         logger.info("testFilter: {}", JsonUtils.encode(sourceList));
@@ -411,7 +543,7 @@ public class Test {
         Iterable<Integer> integerIterable = Iterables.filter(sourceList, new Predicate<Integer>() {
             @Override
             public boolean apply(Integer input) {
-                return input%21 == 0;
+                return input % 21 == 0;
             }
         });
 
@@ -419,14 +551,14 @@ public class Test {
     }
 
     @org.junit.Test
-    public void testDDDD(){
+    public void testDDDD() {
         Object d = org.apache.commons.lang3.tuple.Pair.of("jim", "19");
-        org.apache.commons.lang3.tuple.Pair<String,String> pair = (org.apache.commons.lang3.tuple.Pair)d;
-        logger.info("{}, {}",pair.getLeft(), pair.getRight());
+        org.apache.commons.lang3.tuple.Pair<String, String> pair = (org.apache.commons.lang3.tuple.Pair) d;
+        logger.info("{}, {}", pair.getLeft(), pair.getRight());
     }
-    
+
     @org.junit.Test
-    public void testFormat(){
+    public void testFormat() {
         String format = "duty_ps_parent_product_type_%s";
         //logger.info("format: {}",String.format(format,1));
 
@@ -455,7 +587,7 @@ public class Test {
         Map<String, Object> json = Maps.newHashMap();
         json.put("ctserial", 2222 + "");
 
-        logger.info("dddd: {}", (String)json.get("name"));
+        logger.info("dddd: {}", (String) json.get("name"));
 
         String ctSerial = String.valueOf(json.get("ctserial"));
         logger.info("ctSerial: {}", ctSerial);
@@ -473,7 +605,7 @@ public class Test {
 
         logger.info("range: {}", in);
 
-        boolean contain = Ints.contains(new int[] { 1, 2, 3, 4, 6, 8, 9 }, 20);
+        boolean contain = Ints.contains(new int[]{1, 2, 3, 4, 6, 8, 9}, 20);
         logger.info("contain: {}", contain);
 
         int minute = Calendar.getInstance().get(Calendar.MINUTE);
@@ -481,6 +613,54 @@ public class Test {
 
         int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
         logger.info("houre: {}", hour);
+    }
+
+    @org.junit.Test
+    public void testCicalBarray() throws Exception {
+        CyclicBarrier cyclicBarrier = new CyclicBarrier(3);
+
+        Thread thread1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    await(cyclicBarrier);
+                    int i = counter.getAndIncrement();
+                    logger.info("thread: {}, i: {}", 1, i);
+                    if (counter.get() >= MAX) {
+                        return;
+                    }
+                }
+            }
+        });
+
+        Thread thread2 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    await(cyclicBarrier);
+                    int i = counter.getAndIncrement();
+                    logger.info("thread: {}, i: {}", 2, i);
+
+                    if (counter.get() >= MAX) {
+                        return;
+                    }
+                }
+            }
+        });
+
+
+        thread1.start();
+        thread2.start();
+
+        TimeUnit.MINUTES.sleep(2);
+    }
+
+    public void await(CyclicBarrier cyclicBarrier) {
+        try {
+            cyclicBarrier.await();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @org.junit.Test
@@ -526,7 +706,7 @@ public class Test {
     @org.junit.Test
     public void testCCCC() {
         logger.info(buildResult("jim"));
-        logger.info(buildResult("tom", new String[] { "ps" }));
+        logger.info(buildResult("tom", new String[]{"ps"}));
     }
 
     @org.junit.Test
@@ -601,6 +781,47 @@ public class Test {
         }
 
         return Maps.newHashMap();
+    }
+
+    @org.junit.Test
+    public void testSplitter() {
+
+        String str = "1#102#200#235#236#";
+        /*long start = System.currentTimeMillis();
+        for(int i=0; i<1000; i++) {
+            String[] list = str.split("#");
+            //System.out.println();
+            //List<String> list = Splitter.on("#").splitToList(str);
+            //String result = list.get(list.size() - 2);
+            //logger.info("list: {}", list);
+            //logger.info("testSplitter: {}", list.get(list.size() - 2));
+        }
+        logger.info("result: {}", System.currentTimeMillis() - start);
+
+        start = System.currentTimeMillis();
+        for(int i=0; i<1000; i++) {
+            str = StringUtils.substringBeforeLast(str, "#");
+            String rersult = StringUtils.substringAfterLast(str, "#");
+        }
+
+        logger.info("result: {}", System.currentTimeMillis() - start);
+*/
+
+        str = StringUtils.substringBeforeLast(str, "#");
+        String rersult = StringUtils.substringAfterLast(str, "#");
+        System.out.println(rersult);
+
+    }
+
+
+    @org.junit.Test
+    public void testInteger() {
+        Integer i = null;
+        print(i);
+    }
+
+    public void print(int i) {
+        logger.info("i: {}", i);
     }
 
     @org.junit.Test
@@ -1026,8 +1247,8 @@ public class Test {
         logger.debug("time: {}", System.currentTimeMillis() - begin);
 
         long start = System.currentTimeMillis();
-        String[] search = new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
-        String[] place = new String[] { "*", "*", "*", "*", "*", "*", "*", "*", "*", "*" };
+        String[] search = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+        String[] place = new String[]{"*", "*", "*", "*", "*", "*", "*", "*", "*", "*"};
         String warpSignKey = StringUtils.replaceEach(signKey, search, place);
         logger.debug("signkey: {}, time: {}", warpSignKey, System.currentTimeMillis() - start);
 
@@ -1139,7 +1360,7 @@ public class Test {
 
         engine.put("age", 26);// 赋值脚本环境中所使用的变量
         engine.eval("if(age>=18){println('Old enough to vote!');}else{println('Back to school!');}");// 解析 JavaScript
-                                                                                                     // 脚本,对脚本表达式进行求值
+        // 脚本,对脚本表达式进行求值
     }
 
     @org.junit.Test
@@ -1177,8 +1398,8 @@ public class Test {
         bits |= seconds;
         logger.debug("bits: {}", Integer.toBinaryString(bits));
 
-        logger.debug("bits: {},hour: {},minute: {},second: {}", new Object[] { bits, (bits >> 12) & 0x3F,
-                (bits >> 6) & 0x3F, (bits >> 0) & 0x3F });
+        logger.debug("bits: {},hour: {},minute: {},second: {}", new Object[]{bits, (bits >> 12) & 0x3F,
+                (bits >> 6) & 0x3F, (bits >> 0) & 0x3F});
         logger.debug(Integer.toBinaryString((bits >> 12)));
         logger.debug(Integer.toBinaryString((bits >> 12) & 0x3F));
         logger.debug(Integer.toBinaryString((bits >> 6)));
@@ -1493,7 +1714,7 @@ public class Test {
 
     @org.junit.Test
     public void testLogger() {
-        logger.warn("测试, hds:{},id:{},seq:{}", new Object[] { 1, 2, 3 });
+        logger.warn("测试, hds:{},id:{},seq:{}", new Object[]{1, 2, 3});
     }
 
     @org.junit.Test

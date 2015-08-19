@@ -5,8 +5,10 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
+import com.lmax.disruptor.BlockingWaitStrategy;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
+import com.lmax.disruptor.dsl.ProducerType;
 
 public class LongEventMain {
     public static void main(String[] args) throws Exception {
@@ -27,7 +29,8 @@ public class LongEventMain {
         int bufferSize = 1024;
 
         // Construct the Disruptor
-        Disruptor<LongEvent> disruptor = new Disruptor<LongEvent>(factory, bufferSize, executor);
+        Disruptor<LongEvent> disruptor = new Disruptor<LongEvent>(factory, bufferSize, executor,ProducerType.SINGLE,
+                new BlockingWaitStrategy());
 
         // Connect the handler
         disruptor.handleEventsWith(new LongEventHandler());

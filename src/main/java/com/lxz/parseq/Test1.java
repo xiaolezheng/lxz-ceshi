@@ -11,6 +11,7 @@ import com.linkedin.parseq.function.Success;
 import com.linkedin.parseq.httpclient.HttpClient;
 import com.linkedin.parseq.promise.Promise;
 import com.linkedin.parseq.promise.PromiseListener;
+import com.linkedin.parseq.trace.Trace;
 import com.ning.http.client.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,8 +46,11 @@ public class Test1 {
 
         engine.run(printContentType);
 
+        Trace trace = printContentType.getTrace();
+        logger.info("trace: {}", trace);
 
-        Task<Response> get = HttpClient.get("http://www.baidu.com").task();
+
+       /* Task<Response> get = HttpClient.get("http://www.baidu.com").task();
         Task<Optional<String>> contents = get.transform("getContents", tryGet -> {
             if (tryGet.isFailed()) {
                 return Success.of(Optional.fromNullable("fail"));
@@ -61,17 +65,17 @@ public class Test1 {
             }
         });
 
-        engine.run(contents);
+        engine.run(contents);*/
 
 
-        final Task<String> googleContentType = getContentType("http://www.baidu.com");
+        /*final Task<String> googleContentType = getContentType("http://www.baidu.com");
         final Task<String> bingContentType = getContentType("http://www.bing.com");
         final Task<String> contentTypes =
                 Task.par(googleContentType, bingContentType)
                         .map("concatenate", (google, bing) -> "Google: " + google + "\n" +
                                 "Bing: "   + bing   + "\n");
 
-        //engine.run(contentTypes);
+        engine.run(contentTypes);*/
 
 
         engine.shutdown();
