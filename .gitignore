@@ -1,34 +1,16 @@
-﻿# kdiff3 ignore
-*.orig
-
-# maven ignore
-target/
-
-# eclipse ignore
-.settings/
-.project
-.classpath
-
-# idea ignore
-.idea/
-*.ipr
 *.iml
-*.iws
-
-# temp ignore
-*.log
-*.cache
-*.diff
-*.patch
-*.tmp
-
-# system ignore
+*.swp
+*.txt*.txt*.iml
+*/classes/
 .DS_Store
-Thumbs.db
-
-# package ignore (optional)
-# *.jar
-# *.war
-# *.zip
-# *.tar
-# *.tar.gz
+.classpath
+.idea/
+.project
+.settings
+/target
+classes
+custom.cfg
+md5sum
+target/
+tmp/
+com.haizhi.web.apiserver/src/develop/bin/source.sh
