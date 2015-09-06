@@ -41,7 +41,7 @@ public class BeanUtils {
     public static <T> T copyProperties(Object orig, Class<?> destClassType) {
         try {
             Object dest = destClassType.newInstance();
-            org.apache.commons.beanutils.BeanUtils.copyProperties(dest, orig);
+            BeanUtils.copyProperties(dest, orig);
             return (T) dest;
         } catch (Exception e) {
             logger.error("orig: {}", orig, e);
