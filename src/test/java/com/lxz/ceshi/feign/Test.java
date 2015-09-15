@@ -17,10 +17,8 @@ public class Test {
         String show(@Param("version") String version);
     }
 
-    public static void main(String[] args){
-        Maven maven = Feign.builder()
-                .decoder(new StringDecoder())
-                .target(Maven.class, "http://mvnrepository.com/");
+    public static void main(String[] args) {
+        Maven maven = Feign.builder().decoder(new StringDecoder()).target(Maven.class, "http://mvnrepository.com/");
 
         String result = maven.show("8.10.0");
 
