@@ -18,15 +18,44 @@
     <dependencies>
 
         <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.14.8</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.netflix.feign</groupId>
+            <artifactId>feign-core</artifactId>
+            <version>8.10.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.netflix.feign</groupId>
+            <artifactId>feign-jackson</artifactId>
+            <version>8.10.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.netflix.feign</groupId>
+            <artifactId>feign-slf4j</artifactId>
+            <version>8.10.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>4.1.2.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>co.paralleluniverse</groupId>
             <artifactId>quasar-core</artifactId>
             <version>0.7.0</version>
         </dependency>
-      <!--  <dependency>
-            <groupId>co.paralleluniverse</groupId>
-            <artifactId>quasar-vtime</artifactId>
-            <version>0.7.0</version>
-        </dependency>-->
+        <!--  <dependency>
+              <groupId>co.paralleluniverse</groupId>
+              <artifactId>quasar-vtime</artifactId>
+              <version>0.7.0</version>
+          </dependency>-->
         <dependency>
             <groupId>co.paralleluniverse</groupId>
             <artifactId>quasar-actors</artifactId>
@@ -61,43 +90,43 @@
             <version>1.10.19</version>
         </dependency>
         <!-- log4j2 -->
-       <!-- <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>2.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>2.3</version>
-        </dependency>
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-slf4j-impl</artifactId>
-                <version>2.3</version>
-            </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-nosql</artifactId>
-            <version>2.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-iostreams</artifactId>
-            <version>2.3</version>
-        </dependency>-->
+        <!-- <dependency>
+             <groupId>org.apache.logging.log4j</groupId>
+             <artifactId>log4j-api</artifactId>
+             <version>2.3</version>
+         </dependency>
+         <dependency>
+             <groupId>org.apache.logging.log4j</groupId>
+             <artifactId>log4j-core</artifactId>
+             <version>2.3</version>
+         </dependency>
+             <dependency>
+                 <groupId>org.apache.logging.log4j</groupId>
+                 <artifactId>log4j-slf4j-impl</artifactId>
+                 <version>2.3</version>
+             </dependency>
+         <dependency>
+             <groupId>org.apache.logging.log4j</groupId>
+             <artifactId>log4j-nosql</artifactId>
+             <version>2.3</version>
+         </dependency>
+         <dependency>
+             <groupId>org.apache.logging.log4j</groupId>
+             <artifactId>log4j-iostreams</artifactId>
+             <version>2.3</version>
+         </dependency>-->
 
 
-     <!--   <dependency>
-            <groupId>org.apache.tomcat</groupId>
-            <artifactId>tomcat-jdbc</artifactId>
-            <version>7.0.29</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.tomcat</groupId>
-            <artifactId>tomcat-juli</artifactId>
-            <version>7.0.29</version>
-        </dependency>-->
+        <!--   <dependency>
+               <groupId>org.apache.tomcat</groupId>
+               <artifactId>tomcat-jdbc</artifactId>
+               <version>7.0.29</version>
+           </dependency>
+           <dependency>
+               <groupId>org.apache.tomcat</groupId>
+               <artifactId>tomcat-juli</artifactId>
+               <version>7.0.29</version>
+           </dependency>-->
 
         <dependency>
             <groupId>com.linkedin.parseq</groupId>
@@ -228,7 +257,7 @@
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
-            <version>1.8.3.fix</version>
+            <version>1.8.3</version>
             <exclusions>
                 <exclusion>
                     <artifactId>commons-logging</artifactId>
