@@ -97,8 +97,8 @@ public class Test {
     private static final Logger logger = LoggerFactory.getLogger(Test.class);
     private static final Object NULL = null;
     private static final String FLAG = "OK";
-    private static Cache<String, Integer> cacheCounter = CacheBuilder.newBuilder()
-            .expireAfterWrite(2, TimeUnit.SECONDS).build();
+    private static Cache<String, Integer> cacheCounter = CacheBuilder.newBuilder().expireAfterWrite(2, TimeUnit.SECONDS)
+            .build();
 
     private volatile int MAX = 100;
     private AtomicInteger counter = new AtomicInteger(0);
@@ -150,7 +150,7 @@ public class Test {
     }
 
     /**
-     * @param source      源字符串 包装隐私安全信息，进行中间打码处理
+     * @param source 源字符串 包装隐私安全信息，进行中间打码处理
      * @param replaceChar 打码字符
      * @return
      */
@@ -245,36 +245,105 @@ public class Test {
     }
 
     @org.junit.Test
-    public void testdInteger(){
+    public void testSet() {
+        Set<Integer> a = Sets.newHashSet(1, 2, 4);
+        Set<Integer> b = Sets.newHashSet(2, 3, 5, 4);
+
+        Sets.SetView<Integer> view = Sets.intersection(a, b);
+        logger.info(view.immutableCopy() + "");
+
+        Set<Item> a1 = Sets.newHashSet(new Item(1, "a"), new Item(2, "2"));
+        Set<Item> b1 = Sets.newHashSet(new Item(2, "2"), new Item(3, "3"));
+
+        // 计算交集,对象通过equal方法比较
+        Sets.SetView<Item> c = Sets.intersection(a1, b1);
+        logger.info("c: " + c.immutableCopy());
+
+    }
+
+    static class Item {
+        int count;
+        String status;
+
+        public Item(int count, String status) {
+            this.count = count;
+            this.status = status;
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+        public void setCount(int count) {
+            this.count = count;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+
+            Item item = (Item) o;
+
+            return item.count == this.count && item.getStatus().equals(this.status);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = count;
+            result = 31 * result + (status != null ? status.hashCode() : 0);
+            return result;
+        }
+
+        @Override
+        public String toString() {
+            return "Item{" +
+                    "count=" + count +
+                    ", status='" + status + '\'' +
+                    '}';
+        }
+    }
+
+    @org.junit.Test
+    public void testdInteger() {
         Integer a = 10;
         Integer c = 10;
         Integer d = 267;
         Integer e = 267;
         int b = 10;
 
-        if(a == b){
+        if (a == b) {
             logger.info("true");
         } else {
             logger.info("false");
         }
 
-        if(a == c){
+        if (a == c) {
             logger.info("true");
         } else {
             logger.info("false");
         }
 
-        if(d == e){
+        if (d == e) {
             logger.info("true");
         } else {
             logger.info("false");
         }
     }
 
-
     @org.junit.Test
-    public void testPrintPair(){
-        Pair<HotelBase,HotelBase> pair = Pair.of(new HotelBase(22,"jim"), new HotelBase(25, "tom"));
+    public void testPrintPair() {
+        Pair<HotelBase, HotelBase> pair = Pair.of(new HotelBase(22, "jim"), new HotelBase(25, "tom"));
         logger.info("left: {}, right: {}", pair.getLeft(), pair.getRight());
     }
 
@@ -299,22 +368,22 @@ public class Test {
     }
 
     @org.junit.Test
-    public void testSetEach(){
-        Set<Integer> sets = Sets.newHashSet(1,2,3,4,5);
-        for(int i: sets){
-            logger.info("i: {}",i);
+    public void testSetEach() {
+        Set<Integer> sets = Sets.newHashSet(1, 2, 3, 4, 5);
+        for (int i : sets) {
+            logger.info("i: {}", i);
         }
 
         sets.add(6);
         sets.add(6);
 
-        sets.forEach( item -> logger.info("item: {}", item));
+        sets.forEach(item -> logger.info("item: {}", item));
     }
 
     @org.junit.Test
     public void testSetDiff() {
-        Set<Integer> set1 = Sets.newHashSet(1,2,3,4);
-        Set<Integer> set2 = Sets.newHashSet(2,3,4,7);
+        Set<Integer> set1 = Sets.newHashSet(1, 2, 3, 4);
+        Set<Integer> set2 = Sets.newHashSet(2, 3, 4, 7);
 
         Sets.SetView<Integer> view = Sets.difference(set1, set2);
 
@@ -331,13 +400,13 @@ public class Test {
 
     @org.junit.Test
     public void testMapDiff() {
-        //找出2个Map的不同之处与相同之处，以Map形式返回
+        // 找出2个Map的不同之处与相同之处，以Map形式返回
         ImmutableMap<String, Integer> oneMap = ImmutableMap.of("key1", 1, "key2", 2);
         ImmutableMap<String, Integer> twoMap = ImmutableMap.of("key11", 11, "key2", 2);
         MapDifference<String, Integer> diffHandle = Maps.difference(oneMap, twoMap);
-        Map<String, Integer> commonMap = diffHandle.entriesInCommon();//{"key2",2},若无共同Entry，则返回长度为0的Map
-        Map<String, Integer> diffOnLeft = diffHandle.entriesOnlyOnLeft();//返回左边的Map中不同或者特有的元素
-        Map<String, Integer> diffOnRight = diffHandle.entriesOnlyOnRight();//返回右边的Map中不同或者特有的元素
+        Map<String, Integer> commonMap = diffHandle.entriesInCommon();// {"key2",2},若无共同Entry，则返回长度为0的Map
+        Map<String, Integer> diffOnLeft = diffHandle.entriesOnlyOnLeft();// 返回左边的Map中不同或者特有的元素
+        Map<String, Integer> diffOnRight = diffHandle.entriesOnlyOnRight();// 返回右边的Map中不同或者特有的元素
 
         logger.info("common: {}", commonMap);
         logger.info("diffOnLeft: {}", diffOnLeft);
@@ -377,9 +446,21 @@ public class Test {
     }
 
     @org.junit.Test
+    public void testR(){
+        int result = ThreadLocalRandom.current().nextInt(1, 4);
+        logger.info(result+"");
+
+        Random r = new Random();
+        for(int i=0; i<100;i++) {
+            logger.info(r.nextInt(5) + "");
+        }
+
+    }
+
+    @org.junit.Test
     public void testRandom() {
         ThreadLocalRandom r = ThreadLocalRandom.current();
-        //Random r = new Random();
+        // Random r = new Random();
 
         int value_min_exp = (int) TimeUnit.HOURS.toSeconds(24);
         int value_max_exp = (int) TimeUnit.HOURS.toSeconds(26);
@@ -391,15 +472,14 @@ public class Test {
         int Max = value_max_exp;
 
         for (int i = 0; i < 30; i++) {
-            //int result = Min + (int)(Math.random() * ((Max - Min) + 1));
+            // int result = Min + (int)(Math.random() * ((Max - Min) + 1));
             int result = ThreadLocalRandom.current().nextInt(Min, Max);
             logger.info("result: {}", result);
-            //logger.info("r: {}, r1: {}", r.nextInt(30), localRandom.nextInt(30));
+            // logger.info("r: {}, r1: {}", r.nextInt(30), localRandom.nextInt(30));
         }
 
         long time = System.currentTimeMillis() - startTime;
         logger.info("time: {}", time);
-
 
     }
 
@@ -421,7 +501,7 @@ public class Test {
         List<Integer> list = null;
         Optional<List<Integer>> optional = Optional.fromNullable(list);
         logger.info("ddd0000: {}", optional.orNull());
-        //logger.info("ddd0011: {}",optional.get() );
+        // logger.info("ddd0011: {}",optional.get() );
         if (optional.isPresent()) {
             logger.info("ddd22: {}", optional.get());
         } else {
@@ -485,14 +565,13 @@ public class Test {
 
         HtmlSubmitInput submitButton = (HtmlSubmitInput) page1.getElementById("submitBtn");
 
-        //final HtmlSubmitInput button = form.getInputByName("submitBtn");
+        // final HtmlSubmitInput button = form.getInputByName("submitBtn");
         final HtmlTextInput textUserName = form.getInputByName("login.username");
         final HtmlPasswordInput textPwd = form.getInputByName("login.password");
 
         // Change the value of the text field
         textUserName.setValueAttribute("xiaoluo.zheng");
         textPwd.setValueAttribute("cC!123456");
-
 
         // Now submit the form by clicking the button and get back the second page.
         final HtmlPage page2 = submitButton.click();
@@ -512,16 +591,17 @@ public class Test {
 
     @org.junit.Test
     public void testContains() {
-        String[] sources = new String[]{"双人小标房，钟点房免费WiFi", "双人小标房，免费WiFi", "钟点房双人小标房，免费WiFi", "双人小标房，免费WiFi钟点房", "双人小标房，免费WiFi小时房"};
-        String[] searchs = new String[]{"钟点房", "小时房"};
+        String[] sources = new String[] { "双人小标房，钟点房免费WiFi", "双人小标房，免费WiFi", "钟点房双人小标房，免费WiFi", "双人小标房，免费WiFi钟点房",
+                "双人小标房，免费WiFi小时房" };
+        String[] searchs = new String[] { "钟点房", "小时房" };
         long start = System.currentTimeMillis();
         for (String source : sources) {
-            logger.info("result1: {}", StringUtils.contains(source, searchs[0]) || StringUtils.contains(source, searchs[1]));
+            logger.info("result1: {}",
+                    StringUtils.contains(source, searchs[0]) || StringUtils.contains(source, searchs[1]));
         }
         long time = System.currentTimeMillis() - start;
 
         logger.info("time: {}", time);
-
 
         start = System.currentTimeMillis();
         Pattern pattern = Pattern.compile("钟点房|小时房");
@@ -536,7 +616,6 @@ public class Test {
     @org.junit.Test
     public void testFilter() {
         List<Integer> sourceList = Lists.newArrayList(2, 3, 5, 6, 7, 8, 9, 20);
-
 
         logger.info("testFilter: {}", JsonUtils.encode(sourceList));
 
@@ -560,7 +639,7 @@ public class Test {
     @org.junit.Test
     public void testFormat() {
         String format = "duty_ps_parent_product_type_%s";
-        //logger.info("format: {}",String.format(format,1));
+        // logger.info("format: {}",String.format(format,1));
 
         String roomId = "1348716_41190";
 
@@ -605,7 +684,7 @@ public class Test {
 
         logger.info("range: {}", in);
 
-        boolean contain = Ints.contains(new int[]{1, 2, 3, 4, 6, 8, 9}, 20);
+        boolean contain = Ints.contains(new int[] { 1, 2, 3, 4, 6, 8, 9 }, 20);
         logger.info("contain: {}", contain);
 
         int minute = Calendar.getInstance().get(Calendar.MINUTE);
@@ -647,7 +726,6 @@ public class Test {
                 }
             }
         });
-
 
         thread1.start();
         thread2.start();
@@ -706,7 +784,7 @@ public class Test {
     @org.junit.Test
     public void testCCCC() {
         logger.info(buildResult("jim"));
-        logger.info(buildResult("tom", new String[]{"ps"}));
+        logger.info(buildResult("tom", new String[] { "ps" }));
     }
 
     @org.junit.Test
@@ -734,8 +812,8 @@ public class Test {
 
     @org.junit.Test
     public void sortSS() {
-        List<HotelBase> data = Lists.newArrayList(new HotelBase(5, "xiecheng"), new HotelBase(2, "aaa"), new HotelBase(
-                2, "yilong"), new HotelBase(3, "yilong"), new HotelBase(2, "quanr"));
+        List<HotelBase> data = Lists.newArrayList(new HotelBase(5, "xiecheng"), new HotelBase(2, "aaa"),
+                new HotelBase(2, "yilong"), new HotelBase(3, "yilong"), new HotelBase(2, "quanr"));
 
         // 按价格排序
         Collections.sort(data, new Comparator<HotelBase>() {
@@ -787,32 +865,21 @@ public class Test {
     public void testSplitter() {
 
         String str = "1#102#200#235#236#";
-        /*long start = System.currentTimeMillis();
-        for(int i=0; i<1000; i++) {
-            String[] list = str.split("#");
-            //System.out.println();
-            //List<String> list = Splitter.on("#").splitToList(str);
-            //String result = list.get(list.size() - 2);
-            //logger.info("list: {}", list);
-            //logger.info("testSplitter: {}", list.get(list.size() - 2));
-        }
-        logger.info("result: {}", System.currentTimeMillis() - start);
-
-        start = System.currentTimeMillis();
-        for(int i=0; i<1000; i++) {
-            str = StringUtils.substringBeforeLast(str, "#");
-            String rersult = StringUtils.substringAfterLast(str, "#");
-        }
-
-        logger.info("result: {}", System.currentTimeMillis() - start);
-*/
+        /*
+         * long start = System.currentTimeMillis(); for(int i=0; i<1000; i++) { String[] list = str.split("#");
+         * //System.out.println(); //List<String> list = Splitter.on("#").splitToList(str); //String result =
+         * list.get(list.size() - 2); //logger.info("list: {}", list); //logger.info("testSplitter: {}",
+         * list.get(list.size() - 2)); } logger.info("result: {}", System.currentTimeMillis() - start); start =
+         * System.currentTimeMillis(); for(int i=0; i<1000; i++) { str = StringUtils.substringBeforeLast(str, "#");
+         * String rersult = StringUtils.substringAfterLast(str, "#"); } logger.info("result: {}",
+         * System.currentTimeMillis() - start);
+         */
 
         str = StringUtils.substringBeforeLast(str, "#");
         String rersult = StringUtils.substringAfterLast(str, "#");
         System.out.println(rersult);
 
     }
-
 
     @org.junit.Test
     public void testInteger() {
@@ -836,7 +903,7 @@ public class Test {
                     return 0 / input;
                 }
             });
-            //logger.info("eee: {}", JsonUtils.encode(result));
+            // logger.info("eee: {}", JsonUtils.encode(result));
             result.get(4);
         } catch (Exception e) {
             logger.error("dee", e);
@@ -1247,8 +1314,8 @@ public class Test {
         logger.debug("time: {}", System.currentTimeMillis() - begin);
 
         long start = System.currentTimeMillis();
-        String[] search = new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
-        String[] place = new String[]{"*", "*", "*", "*", "*", "*", "*", "*", "*", "*"};
+        String[] search = new String[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+        String[] place = new String[] { "*", "*", "*", "*", "*", "*", "*", "*", "*", "*" };
         String warpSignKey = StringUtils.replaceEach(signKey, search, place);
         logger.debug("signkey: {}, time: {}", warpSignKey, System.currentTimeMillis() - start);
 
@@ -1398,8 +1465,8 @@ public class Test {
         bits |= seconds;
         logger.debug("bits: {}", Integer.toBinaryString(bits));
 
-        logger.debug("bits: {},hour: {},minute: {},second: {}", new Object[]{bits, (bits >> 12) & 0x3F,
-                (bits >> 6) & 0x3F, (bits >> 0) & 0x3F});
+        logger.debug("bits: {},hour: {},minute: {},second: {}",
+                new Object[] { bits, (bits >> 12) & 0x3F, (bits >> 6) & 0x3F, (bits >> 0) & 0x3F });
         logger.debug(Integer.toBinaryString((bits >> 12)));
         logger.debug(Integer.toBinaryString((bits >> 12) & 0x3F));
         logger.debug(Integer.toBinaryString((bits >> 6)));
@@ -1714,7 +1781,7 @@ public class Test {
 
     @org.junit.Test
     public void testLogger() {
-        logger.warn("测试, hds:{},id:{},seq:{}", new Object[]{1, 2, 3});
+        logger.warn("测试, hds:{},id:{},seq:{}", new Object[] { 1, 2, 3 });
     }
 
     @org.junit.Test
@@ -1895,10 +1962,11 @@ public class Test {
     }
 
     private static enum EditTaskStateType {
-        EDIT_WAIT("项目待编辑", 2), DRAFT("项目编辑中", 3), VERIFY_WAIT("项目编辑完成，待认领", 4), VERIFY_IN_PROGRESS("页面待总部审核", 5), VERIFY_NOT_PASS(
-                "总部驳回，待编辑", 6), VERIFY_PASS("等待商家确认", 7), CUSTOMER_CONFIRM_NOT_PASS("商家驳回，待编辑", 8), CUSTOMER_CONFIRM_PASS(
-                "商家确认，团品待上架", 9), BOOK_ONLINE("预约上架", 11), // 暂无
-        ONLINE("团品已上架", 12), OFFLINE("团品已下架", 13), ONLINE_UPDATE("已修改，团品待更新", 14), EDIT_LEADER_REJECT("编辑Leader驳回", 15);
+        EDIT_WAIT("项目待编辑", 2), DRAFT("项目编辑中", 3), VERIFY_WAIT("项目编辑完成，待认领", 4), VERIFY_IN_PROGRESS("页面待总部审核",
+                5), VERIFY_NOT_PASS("总部驳回，待编辑", 6), VERIFY_PASS("等待商家确认", 7), CUSTOMER_CONFIRM_NOT_PASS("商家驳回，待编辑",
+                        8), CUSTOMER_CONFIRM_PASS("商家确认，团品待上架", 9), BOOK_ONLINE("预约上架", 11), // 暂无
+                        ONLINE("团品已上架", 12), OFFLINE("团品已下架", 13), ONLINE_UPDATE("已修改，团品待更新",
+                                14), EDIT_LEADER_REJECT("编辑Leader驳回", 15);
 
         private String text;
         private int code;
@@ -1908,5 +1976,9 @@ public class Test {
             this.code = code;
         }
 
+    }
+
+    public static void main(String[] args) {
+        logger.info(StringUtils.contains("12345", "34") + "");
     }
 }

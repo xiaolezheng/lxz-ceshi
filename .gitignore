@@ -1,6 +1,7 @@
 *.iml
 *.swp
 *.txt*.txt*.iml
+*.catalina*
 */classes/
 .DS_Store
 .classpath
