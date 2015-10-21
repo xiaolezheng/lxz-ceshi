@@ -23,7 +23,6 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.function.Consumer;
 
 /**
  * Created by xiaolezheng on 15/10/16.
@@ -46,11 +45,11 @@ public class PgTest {
     public static void main(String[] args) {
         //makeDataInsertPg();
 
-        makeDataInsertMongo();
+        //makeDataInsertMongo();
 
         //selectDataFromPg();
 
-        //selectDataFromMongo();
+        selectDataFromMongo();
 
         /*for (int i = 0; i < 20; i++) {
             int rand = rand();
@@ -115,7 +114,7 @@ public class PgTest {
             int index = 0;
             List<Document> documentList = Lists.newArrayListWithExpectedSize(100);
 
-            for (int i = 0; i < 100000; i++) {
+            for (int i = 0; i < 500000; i++) {
                 FormData formData = createFormData();
                 Document document = Document.parse(JsonUtil.encode(formData));
                 documentList.add(document);
@@ -126,6 +125,7 @@ public class PgTest {
                     documentList.clear();
                     index = 0;
                 }
+
             }
 
             mongoClient.close();
