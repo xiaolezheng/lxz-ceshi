@@ -4,12 +4,14 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.lxz.util.JsonUtil;
+import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.BsonDocument;
 import org.bson.Document;
 import org.codehaus.jackson.type.TypeReference;
 import org.springframework.util.StopWatch;
@@ -45,11 +47,11 @@ public class PgTest {
     public static void main(String[] args) {
         //makeDataInsertPg();
 
-        //makeDataInsertMongo();
+        makeDataInsertMongo();
 
         //selectDataFromPg();
 
-        selectDataFromMongo();
+        //selectDataFromMongo();
 
         /*for (int i = 0; i < 20; i++) {
             int rand = rand();
@@ -71,9 +73,12 @@ public class PgTest {
 
             List<Document> documentList = Lists.newArrayList();
 
+
             MongoCursor<Document> cursor = collection.find(Filters.eq("formId", "fm_0a5ea0c3cfaa33d5093d74987b3ac35_14")).iterator();
             while (cursor.hasNext()){
-                documentList.add(cursor.next());
+                Document document = cursor.next();
+
+                documentList.add(document);
             }
 
 
@@ -114,7 +119,7 @@ public class PgTest {
             int index = 0;
             List<Document> documentList = Lists.newArrayListWithExpectedSize(100);
 
-            for (int i = 0; i < 500000; i++) {
+            for (int i = 0; i < 5000; i++) {
                 FormData formData = createFormData();
                 Document document = Document.parse(JsonUtil.encode(formData));
                 documentList.add(document);

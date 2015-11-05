@@ -245,6 +245,27 @@ public class Test {
     }
 
     @org.junit.Test
+    public void testPair(){
+        Pair<String,String> pair = Pair.of("name", "jim");
+        String content = JsonUtils.encode(pair);
+        logger.info("content: {}", content);
+
+        Pair<String,String> newPair = JsonUtils.decode(content, Pair.class);
+
+        logger.info("{},{}", newPair.getLeft(), newPair.getRight());
+    }
+
+    @org.junit.Test
+    public void testList(){
+        List<Integer> list = Lists.newArrayList(1,2,3,5,6);
+        List<List<Integer>> partLists = Lists.partition(list,2);
+        for(List<Integer> item: partLists){
+            logger.info("item: {}", JsonUtils.encode(item));
+        }
+
+    }
+
+    @org.junit.Test
     public void testSet() {
         Set<Integer> a = Sets.newHashSet(1, 2, 4);
         Set<Integer> b = Sets.newHashSet(2, 3, 5, 4);
@@ -259,6 +280,12 @@ public class Test {
         Sets.SetView<Item> c = Sets.intersection(a1, b1);
         logger.info("c: " + c.immutableCopy());
 
+        Sets.SetView<Item> itemSetView = Sets.difference(a1, b1);
+        logger.info("d: {}", itemSetView.immutableCopy());
+
+
+        Sets.SetView<Item> itemSetView2 = Sets.difference(b1, a1);
+        logger.info("e: {}", itemSetView2.immutableCopy());
     }
 
     static class Item {
@@ -402,7 +429,7 @@ public class Test {
     public void testMapDiff() {
         // 找出2个Map的不同之处与相同之处，以Map形式返回
         ImmutableMap<String, Integer> oneMap = ImmutableMap.of("key1", 1, "key2", 2);
-        ImmutableMap<String, Integer> twoMap = ImmutableMap.of("key11", 11, "key2", 2);
+        ImmutableMap<String, Integer> twoMap = ImmutableMap.of("key11", 11, "key23", 2);
         MapDifference<String, Integer> diffHandle = Maps.difference(oneMap, twoMap);
         Map<String, Integer> commonMap = diffHandle.entriesInCommon();// {"key2",2},若无共同Entry，则返回长度为0的Map
         Map<String, Integer> diffOnLeft = diffHandle.entriesOnlyOnLeft();// 返回左边的Map中不同或者特有的元素
@@ -411,6 +438,18 @@ public class Test {
         logger.info("common: {}", commonMap);
         logger.info("diffOnLeft: {}", diffOnLeft);
         logger.info("diffOnRight: {}", diffOnRight);
+
+        List<Integer> list = Lists.newArrayList(1,2,5,6,6);
+
+
+        Map<String,Integer> maps  = Maps.uniqueIndex(list, new Function<Integer, String>() {
+            @Override
+            public String apply(Integer input) {
+                return input.toString();
+            }
+        });
+
+        logger.info("dd: {}", JsonUtil.encode(Lists.newArrayList(maps.values())));
     }
 
     @org.junit.Test
