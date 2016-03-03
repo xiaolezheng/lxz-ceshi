@@ -3,9 +3,11 @@
 */
 package com.lxz.diff;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.danielbechler.diff.ObjectDifferBuilder;
 import de.danielbechler.diff.node.DiffNode;
+import de.danielbechler.diff.selector.ElementSelector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +23,7 @@ public class DiffTest {
         Map<String,Object> workMap = Maps.newHashMap();
         workMap.put("age",10);
         workMap.put("name", "jim");
+        workMap.put("address", Maps.newHashMap(ImmutableMap.of("code",122,"gps",11)));
 
         Map<String,Object> baseMap = Maps.newHashMap();
         baseMap.put("age",12);
@@ -28,7 +31,10 @@ public class DiffTest {
 
         DiffNode root = ObjectDifferBuilder.buildDefault().compare(workMap, baseMap);
 
+
+
         logger.info("DiffTest, result: {}",root);
 
+        //log.info("DiffTest, result: {}",root);
     }
 }
