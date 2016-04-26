@@ -11,7 +11,7 @@ import com.linkedin.parseq.function.Success;
 import com.linkedin.parseq.httpclient.HttpClient;
 import com.linkedin.parseq.promise.Promise;
 import com.linkedin.parseq.promise.PromiseListener;
-import com.linkedin.parseq.trace.Trace;
+import com.linkedin.parseq.trace.TraceUtil;
 import com.ning.http.client.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 public class Test1 {
     private static final Logger logger = LoggerFactory.getLogger(Test1.class);
 
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) throws Exception {
         final int numCores = Runtime.getRuntime().availableProcessors();
         final ExecutorService taskScheduler = Executors.newFixedThreadPool(numCores + 1);
         final ScheduledExecutorService timerScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -39,18 +39,22 @@ public class Test1 {
                 .build();
 
 
-        Task<Response> head = HttpClient.head("http://www.baidu.com").task().withTimeout(1,TimeUnit.SECONDS);
+        Task<Response> head = HttpClient.head("http://www.baidu.com").task().withTimeout(1, TimeUnit.SECONDS);
         Task<String> contentType = head.map("toContentType", response -> response.getContentType());
         Task<String> printContentType = contentType.andThen("print", System.out::println);
         Task<String> logFailure = contentType.onFailure("print stack trace", e -> e.printStackTrace());
 
         engine.run(printContentType);
+        engine.run(logFailure);
 
-        Trace trace = printContentType.getTrace();
+        String trace = TraceUtil.getJsonTrace(printContentType);
+
         logger.info("trace: {}", trace);
 
+        logger.info("-------------------------------------------------------------------------------------------");
+        logger.info("-------------------------------------------------------------------------------------------");
 
-       /* Task<Response> get = HttpClient.get("http://www.baidu.com").task();
+        Task<Response> get = HttpClient.get("http://www.baidu.com").task();
         Task<Optional<String>> contents = get.transform("getContents", tryGet -> {
             if (tryGet.isFailed()) {
                 return Success.of(Optional.fromNullable("fail"));
@@ -65,25 +69,26 @@ public class Test1 {
             }
         });
 
-        engine.run(contents);*/
+        engine.run(contents);
+
+        logger.info("-------------------------------------------------------------------------------------------");
+        logger.info("-------------------------------------------------------------------------------------------");
 
 
-        /*final Task<String> googleContentType = getContentType("http://www.baidu.com");
+        final Task<String> googleContentType = getContentType("http://www.baidu.com");
         final Task<String> bingContentType = getContentType("http://www.bing.com");
         final Task<String> contentTypes =
                 Task.par(googleContentType, bingContentType)
                         .map("concatenate", (google, bing) -> "Google: " + google + "\n" +
-                                "Bing: "   + bing   + "\n");
+                                "Bing: " + bing + "\n");
 
-        engine.run(contentTypes);*/
+        engine.run(contentTypes);
 
 
         engine.shutdown();
         engine.awaitTermination(1, TimeUnit.SECONDS);
         taskScheduler.shutdown();
         timerScheduler.shutdown();
-
-
     }
 
     private static Task<String> getContentType(String url) {
