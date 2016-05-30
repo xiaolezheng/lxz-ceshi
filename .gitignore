@@ -15,4 +15,3 @@ md5sum
 target/
 tmp/
 catalina.*/
-com.haizhi.web.apiserver/src/develop/bin/source.sh
