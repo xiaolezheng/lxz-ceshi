@@ -1666,8 +1666,8 @@ public class Test {
     @org.junit.Test
     public void md5() {
         String str = "dd";
-        String md5 = org.apache.commons.codec.digest.DigestUtils.md2Hex(str);
-        logger.debug("md5: {}", md5);
+        byte[] md5 = org.apache.commons.codec.digest.DigestUtils.md5(str);
+        logger.debug("md5: {}", new String(md5));
     }
 
     @org.junit.Test
