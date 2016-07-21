@@ -49,7 +49,7 @@ public class HotelApi implements Serializable {
     }
 
     public static void main(String[] args) throws Exception {
-        String url = "http://l-hotel.ops.cn2.qunar.com/price/api3.jsp?cityurl=guilin&ids=guilin_81&fromDate=2014-06-27&toDate=2014-06-28&attrs=&callPrice=&querySource=crm";
+        String url = "xxx";
         String content = NetUtil.downloadString(url);
 
         JsonNode jsonNode = JsonUtil.toJsonNode(content);
