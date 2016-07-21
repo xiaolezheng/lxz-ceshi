@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.persistence.Query;
 
 /**
  * Created by xiaolezheng on 16/5/30.
@@ -40,8 +41,6 @@ public class Test {
 
             log.info("p: {}",personFound);
         }
-
-
 
         em.close();
         emf.close();
