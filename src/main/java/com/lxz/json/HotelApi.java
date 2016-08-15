@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2014 Qunar.com. All Rights Reserved.
- */
 package com.lxz.json;
 
 import java.io.Serializable;

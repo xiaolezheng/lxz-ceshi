@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2014 Qunar.com. All Rights Reserved.
+* Copyright (c) 2014 . All Rights Reserved.
 */
 package com.lxz.file;
 

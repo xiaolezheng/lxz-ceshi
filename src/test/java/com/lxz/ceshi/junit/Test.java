@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 Qunar.com. All Rights Reserved.
+ * Copyright (c) 2014 . All Rights Reserved.
  */
 package com.lxz.ceshi.junit;
 
@@ -596,7 +596,7 @@ public class Test {
         final WebClient webClient = new WebClient();
 
         // Get the first page
-        final HtmlPage page1 = webClient.getPage("http://oa.corp.qunar.com/seeyon/index.jsp");
+        final HtmlPage page1 = webClient.getPage("http://oa.corp./seeyon/index.jsp");
 
         // Get the form that we are dealing with and within that form,
         // find the submit button and the field that we want to change.
@@ -1177,7 +1177,7 @@ public class Test {
 
         String seqId = StringUtils.substring(hotelSeq, index + 1);
 
-        String url = "http://hotel.qunar.com/city/{0}/dt-{1}/";
+        String url = "http://hotel./city/{0}/dt-{1}/";
 
         url = MessageFormat.format(url, cityCode, seqId);
 
