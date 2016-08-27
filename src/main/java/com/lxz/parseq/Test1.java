@@ -7,6 +7,7 @@ import com.google.common.base.Optional;
 import com.linkedin.parseq.Engine;
 import com.linkedin.parseq.EngineBuilder;
 import com.linkedin.parseq.Task;
+import com.linkedin.parseq.function.Consumer1;
 import com.linkedin.parseq.function.Success;
 import com.linkedin.parseq.httpclient.HttpClient;
 import com.linkedin.parseq.promise.Promise;
@@ -16,6 +17,7 @@ import com.ning.http.client.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -29,6 +31,13 @@ public class Test1 {
     private static final Logger logger = LoggerFactory.getLogger(Test1.class);
 
     public static void main(String[] args) throws Exception {
+        testHttpClient();
+
+
+        // parseqTest();
+    }
+
+    private static void parseqTest() throws IOException, InterruptedException {
         final int numCores = Runtime.getRuntime().availableProcessors();
         final ExecutorService taskScheduler = Executors.newFixedThreadPool(numCores + 1);
         final ScheduledExecutorService timerScheduler = Executors.newSingleThreadScheduledExecutor();
@@ -94,5 +103,29 @@ public class Test1 {
     private static Task<String> getContentType(String url) {
         return HttpClient.get(url).task()
                 .map("getContentType", response -> response.getContentType());
+    }
+
+    public static void testHttpClient() throws Exception{
+        final int numCores = Runtime.getRuntime().availableProcessors();
+        final ExecutorService taskScheduler = Executors.newFixedThreadPool(numCores + 1);
+        final ScheduledExecutorService timerScheduler = Executors.newSingleThreadScheduledExecutor();
+
+        final Engine engine = new EngineBuilder()
+                .setTaskExecutor(taskScheduler)
+                .setTimerScheduler(timerScheduler)
+                .build();
+
+        Task<Response> responseTask = HttpClient.post("http://dev.yunbiaodan.cc/api/signin").addFormParam("username", "mytest").addFormParam("password", "123456").task();
+        engine.run(responseTask);
+
+        responseTask.await(1000, TimeUnit.MILLISECONDS);
+        logger.info("result: {}", responseTask.get().getResponseBody());
+
+        logger.info("trace: {}", responseTask.getTraceBuilder().build().toString());
+
+        engine.shutdown();
+        engine.awaitTermination(1, TimeUnit.SECONDS);
+        taskScheduler.shutdown();
+        timerScheduler.shutdown();
     }
 }
