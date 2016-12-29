@@ -23,6 +23,19 @@
             <version>6.9.10</version>
         </dependency>
 
+        <!-- ribbon -->
+        <dependency>
+            <groupId>com.netflix.ribbon</groupId>
+            <artifactId>ribbon-httpclient</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.netflix.ribbon</groupId>
+            <artifactId>ribbon-eureka</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+
+
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
@@ -492,11 +505,11 @@
         </dependency>
 
 
-        <dependency>
+       <!-- <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
             <version>5.0.0.Alpha1</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>com.sparkjava</groupId>
             <artifactId>spark-core</artifactId>
@@ -655,6 +668,56 @@
                     <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.tamaya</groupId>
+            <artifactId>tamaya-api</artifactId>
+            <version>0.2-incubating</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.tamaya.ext</groupId>
+            <artifactId>tamaya-json</artifactId>
+            <version>0.2-incubating</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tamaya.ext</groupId>
+            <artifactId>tamaya-etcd</artifactId>
+            <version>0.2-incubating</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tamaya.ext</groupId>
+            <artifactId>tamaya-consul</artifactId>
+            <version>0.2-incubating</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tamaya.ext</groupId>
+            <artifactId>tamaya-resources</artifactId>
+            <version>0.2-incubating</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tamaya.ext</groupId>
+            <artifactId>tamaya-mutable-config</artifactId>
+            <version>0.2-incubating</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tamaya.ext</groupId>
+            <artifactId>tamaya-spisupport</artifactId>
+            <version>0.2-incubating</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.apache.tamaya.ext</groupId>
+            <artifactId>tamaya-classloader-support</artifactId>
+            <version>0.2-incubating</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mousio</groupId>
+            <artifactId>etcd4j</artifactId>
+            <version>2.12.0</version>
         </dependency>
     </dependencies>
     <build>
