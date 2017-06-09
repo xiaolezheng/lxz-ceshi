@@ -13,11 +13,11 @@
         </encoder>
     </appender>
 
-       <logger name="com.lxz" level="debug" additivity="false">
+       <logger name="com.lxz" level="info" additivity="false">
         <appender-ref ref="console"/>
     </logger>
 
-    <logger name="com.linkedin" level="debug" additivity="false">
+    <logger name="com.linkedin" level="info" additivity="false">
         <appender-ref ref="console"/>
     </logger>
 
@@ -25,10 +25,10 @@
         <appender-ref ref="console"/>
     </logger>
 
-    <logger name="com.mongodb" level="debug" additivity="false">
+    <logger name="com.mongodb" level="info" additivity="false">
         <appender-ref ref="console"/>
     </logger>
-    <root level="debug">
+    <root level="info">
         <!--<appender-ref ref="FILE"/>-->
         <appender-ref ref="console"/>
     </root>
